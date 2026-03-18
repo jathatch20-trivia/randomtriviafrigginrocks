@@ -312,13 +312,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
     <div class="pricing-pill">
       <span class="dot">●</span>
-      First game <strong>&nbsp;$5&nbsp;</strong>·&nbsp; Return players <strong>&nbsp;$2</strong>
+      Every game just <strong>&nbsp;$2&nbsp;</strong> · No ads · No subscriptions
     </div>
 
     <div class="ads-line">🚫 Ads are for the birds — we keep it clean so you can focus on winning.</div>
 
-    <button class="btn-primary" onclick="goToProfile(false)">🚀 Play Now — $5</button>
-    <button class="btn-secondary" onclick="goToProfile(true)">Already played? Sign in — $2</button>
+    <button class="btn-primary" onclick="goToProfile(false)">🚀 Play Now — $2</button>
+    
 
     <div class="stats-row">
       <div class="stat"><div class="stat-num">84K</div><div class="stat-label">Players</div></div>
@@ -368,52 +368,33 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <button class="back-btn" onclick="showScreen('profile-setup')">←</button>
       <div class="screen-title">CHECKOUT</div>
     </div>
+
+    <!-- Price summary card -->
     <div class="pay-card">
-      <h3>Pay With</h3>
-      <div class="pay-methods">
-        <div class="pay-method selected" onclick="selectPay(this,'stripe')"><span class="pm-icon">💳</span>Card</div>
-        <div class="pay-method" onclick="selectPay(this,'apple')" id="pm-apple"><span class="pm-icon"></span>Apple Pay</div>
-        <div class="pay-method" onclick="selectPay(this,'venmo')"><span class="pm-icon">💙</span>Venmo</div>
-        <div class="pay-method" onclick="selectPay(this,'paypal')"><span class="pm-icon">🅿️</span>PayPal</div>
+      <div style="text-align:center;padding:0.5rem 0 1.2rem;">
+        <div style="font-size:3rem;margin-bottom:0.5rem">🍎</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;margin-bottom:0.3rem" id="pay-label">First Game</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--sp-lavender);line-height:1" id="pay-amount">$2</div>
+        <div style="font-size:0.75rem;color:rgba(237,232,248,0.45);margin-top:0.4rem">One-time access · Funds auto-deposited</div>
       </div>
 
-      <!-- Apple Pay real button — shows automatically on Safari/iPhone -->
-      <div id="apple-pay-button-container" style="display:none;margin-bottom:1rem;">
+      <!-- Apple Pay real button -->
+      <div id="apple-pay-button-container" style="margin-bottom:1rem;">
         <div id="payment-request-button"></div>
-        <div style="font-size:0.75rem;color:rgba(245,242,235,0.4);text-align:center;margin-top:0.5rem;">
-          Tap the button above to pay with Apple Pay
-        </div>
       </div>
-      <div id="stripe-section">
-        <div class="form-group">
-          <label>Card Details</label>
-          <div id="stripe-card-element"></div>
-          <div id="stripe-errors"></div>
-        </div>
-        <div class="form-group">
-          <label>Name on Card</label>
-          <input type="text" id="cardholder-name" placeholder="Jane Smith">
-        </div>
+
+      <!-- Fallback message if Apple Pay not available -->
+      <div id="apple-pay-unavailable" style="display:none;text-align:center;padding:1.5rem;background:rgba(255,255,255,0.04);border-radius:14px;border:1px dashed rgba(255,255,255,0.15);">
+        <div style="font-size:1.5rem;margin-bottom:0.5rem">📱</div>
+        <div style="font-weight:700;margin-bottom:0.4rem">Apple Pay Required</div>
+        <div style="font-size:0.85rem;color:rgba(237,232,248,0.5)">Please open this game in <strong>Safari on your iPhone or Mac</strong> to pay with Apple Pay.</div>
       </div>
-      <div id="alt-pay-section" style="display:none;">
-        <div class="alt-pay-box">
-          <span class="alt-pay-icon" id="alt-icon">💙</span>
-          <div id="alt-msg">You'll be redirected to complete payment.</div>
-        </div>
-      </div>
-      <div class="price-summary">
-        <div>
-          <div style="font-weight:700" id="pay-label">First Game</div>
-          <div style="font-size:0.72rem;color:rgba(245,242,235,0.4)">Funds auto-deposited to your account</div>
-        </div>
-        <div class="amount" id="pay-amount">$5</div>
-      </div>
+
+      <div id="stripe-errors" style="color:var(--red);font-size:0.8rem;margin-top:0.5rem;min-height:1rem;text-align:center;"></div>
     </div>
-    <div class="secure-note">🔒 Secured by <span class="stripe-badge">Stripe</span> · 256-bit encryption</div>
-    <button class="btn-primary" id="pay-btn" onclick="processPayment()">
-      Pay <span id="pay-btn-amount">$5</span> & Play Now →
-    </button>
-    <div style="font-size:0.72rem;color:rgba(245,242,235,0.3);text-align:center;margin-top:0.75rem;">No refunds on completed games.</div>
+
+    <div class="secure-note">🔒 Secured by <span class="stripe-badge">Stripe</span> · Apple Pay · 256-bit encryption</div>
+    <div style="font-size:0.72rem;color:rgba(245,242,235,0.3);text-align:center;margin-top:0.5rem;">No refunds on completed games.</div>
   </div>
 </div>
 
@@ -578,6 +559,379 @@ const ALL_QUESTIONS = [
   {cat:'🧬 Science',diff:'easy',q:'What is the powerhouse of the cell?',opts:['Nucleus','Ribosome','Mitochondria','Vacuole'],ans:2,fact:'The mitochondria produces ATP energy through cellular respiration. This fact lives rent-free in everyone\'s head.'},
   {cat:'🧬 Science',diff:'hard',q:'What is the rarest blood type?',opts:['AB-','O-','B-','A-'],ans:0,fact:'AB- is found in fewer than 1% of people. O- is the universal blood donor; AB+ is the universal plasma donor.'},
   {cat:'🧬 Science',diff:'medium',q:'What force keeps planets orbiting the Sun?',opts:['Magnetism','Nuclear force','Gravity','Centrifugal force'],ans:2,fact:'Gravity is a mutual attraction between masses. The Sun\'s enormous mass bends spacetime, keeping planets in orbit.'},
+
+  // ── MUSIC & LYRICS ──
+  {cat:'🎵 Music',diff:'easy',q:'Which band sang "Bohemian Rhapsody"?',opts:['The Beatles','Queen','Led Zeppelin','The Rolling Stones'],ans:1,fact:'Freddie Mercury wrote Bohemian Rhapsody in 1975. It was so unusual that the label almost refused to release it.'},
+  {cat:'🎵 Music',diff:'easy',q:"What is Taylor Swift's debut album called?",opts:['Fearless','Speak Now','Taylor Swift','Red'],ans:2,fact:'Taylor Swift released her self-titled debut album in 2006 at age 16. She wrote or co-wrote every track.'},
+  {cat:'🎵 Music',diff:'medium',q:"Which rapper's real name is Aubrey Drake Graham?",opts:['Jay-Z','Kendrick Lamar','Drake','Lil Wayne'],ans:2,fact:'Drake was born Aubrey Drake Graham in Toronto, Canada. He started his career as an actor on Degrassi.'},
+  {cat:'🎵 Music',diff:'easy',q:'What instrument does Elton John famously play?',opts:['Guitar','Drums','Piano','Bass'],ans:2,fact:'Elton John has sold over 300 million records and is one of the best-selling music artists of all time.'},
+  {cat:'🎵 Music',diff:'medium',q:'Which artist released the album "Thriller"?',opts:['Prince','Michael Jackson','Madonna','Whitney Houston'],ans:1,fact:'Thriller (1982) is the best-selling album of all time with over 66 million copies sold worldwide.'},
+  {cat:'🎵 Music',diff:'hard',q:'What year did Nirvana release "Nevermind"?',opts:['1989','1991','1993','1995'],ans:1,fact:'Nevermind was released September 24, 1991 and knocked Michael Jackson off the #1 spot on the Billboard charts.'},
+  {cat:'🎵 Music',diff:'easy',q:'Which city is known as the birthplace of jazz?',opts:['Chicago','New York','Nashville','New Orleans'],ans:3,fact:'New Orleans is considered the birthplace of jazz, emerging from a blend of African, Caribbean, and European musical traditions.'},
+  {cat:'🎵 Music',diff:'medium',q:'How many members are in BTS?',opts:['5','6','7','8'],ans:2,fact:'BTS has 7 members: RM, Jin, Suga, J-Hope, Jimin, V, and Jungkook. They formed in Seoul in 2013.'},
+  {cat:'🎵 Music',diff:'hard',q:'Which artist holds the record for most weeks at #1 on the Billboard Hot 100?',opts:['Mariah Carey','Drake','The Weeknd','Lil Nas X'],ans:3,fact:"Lil Nas X's Old Town Road spent 19 weeks at #1 in 2019, breaking the record previously held by Mariah Carey."},
+  {cat:'🎵 Music',diff:'easy',q:'What pop star is known as "Queen Bey"?',opts:['Rihanna','Lady Gaga','Beyonce','Ariana Grande'],ans:2,fact:'Beyonce Knowles-Carter has won more Grammys than any other artist in history and is one of the world best-selling musicians.'},
+  {cat:'🎵 Music',diff:'medium',q:"Which band was Beyonce in before going solo?",opts:["TLC","Destiny's Child","En Vogue","SWV"],ans:1,fact:"Destiny's Child also included Kelly Rowland and Michelle Williams. They sold over 60 million records worldwide."},
+  {cat:'🎵 Music',diff:'medium',q:"What is Eminem's real name?",opts:['Marshall Mathers','Eric Matthews','Michael Evans','Marcus Mills'],ans:0,fact:'Marshall Bruce Mathers III was born in St. Joseph, Missouri in 1972. His nickname Eminem comes from his initials M.M.'},
+  {cat:'🎵 Music',diff:'easy',q:'Which country does Shakira come from?',opts:['Mexico','Spain','Brazil','Colombia'],ans:3,fact:'Shakira Isabel Mebarak Ripoll was born in Barranquilla, Colombia. She began performing at age 10.'},
+  {cat:'🎵 Music',diff:'hard',q:'What was the first music video ever played on MTV?',opts:['Thriller by Michael Jackson','Video Killed the Radio Star','Like a Virgin by Madonna','Jump by Van Halen'],ans:1,fact:'Video Killed the Radio Star by The Buggles was MTV first ever music video, aired on August 1, 1981 at 12:01 AM.'},
+  {cat:'🎵 Music',diff:'medium',q:'Which artist is known as the "King of Pop"?',opts:['Prince','Elvis Presley','Michael Jackson','David Bowie'],ans:2,fact:'Michael Jackson earned the King of Pop title due to his revolutionary impact on music, dance, and fashion worldwide.'},
+  {cat:'🎵 Music',diff:'easy',q:'What is the best-selling single of all time?',opts:['Shape of You','White Christmas','Blinding Lights','Something Just Like This'],ans:1,fact:'White Christmas by Bing Crosby has sold over 50 million copies since 1942 and is the best-selling single of all time.'},
+  {cat:'🎵 Music',diff:'medium',q:'Which rock band features brothers Eddie and Alex Van Halen?',opts:['Aerosmith','Van Halen','The Eagles','Guns N Roses'],ans:1,fact:'Van Halen was formed in 1972 in Pasadena, California. Eddie Van Halen is considered one of the greatest guitarists ever.'},
+  {cat:'🎵 Music',diff:'hard',q:'What instrument has 88 keys?',opts:['Organ','Harpsichord','Piano','Accordion'],ans:2,fact:'A standard piano has 88 keys: 52 white and 36 black. The piano was invented around 1700 by Bartolomeo Cristofori in Italy.'},
+  {cat:'🎵 Music',diff:'easy',q:'Which country does Ed Sheeran come from?',opts:['Australia','Ireland','USA','England'],ans:3,fact:'Ed Sheeran was born in Halifax, England in 1991. He taught himself guitar as a child and busked on the streets of London.'},
+  {cat:'🎵 Music',diff:'medium',q:'Which female artist has sold the most albums in history?',opts:['Mariah Carey','Whitney Houston','Madonna','Celine Dion'],ans:2,fact:'Madonna has sold over 300 million records worldwide, making her the best-selling female recording artist of all time.'},
+  // ── FOOD & DRINK ──
+  {cat:'🍕 Food',diff:'easy',q:'Which country invented pizza?',opts:['USA','France','Greece','Italy'],ans:3,fact:'Pizza originated in Naples, Italy in the 18th century. The classic Margherita was created in 1889 for Queen Margherita of Savoy.'},
+  {cat:'🍕 Food',diff:'easy',q:'What is the main ingredient in guacamole?',opts:['Tomato','Avocado','Lime','Onion'],ans:1,fact:'Avocados are packed with healthy fats. Guacamole originates from the Aztec civilization in Mexico.'},
+  {cat:'🍕 Food',diff:'medium',q:'Which country drinks the most coffee per person?',opts:['USA','Italy','Finland','Brazil'],ans:2,fact:'Finland consumes more coffee per capita than any other country — about 12kg per person per year.'},
+  {cat:'🍕 Food',diff:'hard',q:'What is the most expensive spice in the world by weight?',opts:['Vanilla','Black Truffle','Saffron','Cardamom'],ans:2,fact:'Saffron can cost up to $10,000 per pound. Each crocus flower produces only 3 stigmas which must be harvested by hand.'},
+  {cat:'🍕 Food',diff:'medium',q:'Which fruit has more Vitamin C than an orange?',opts:['Apple','Strawberry','Kiwi','Grape'],ans:2,fact:'Kiwi fruit contains nearly twice the Vitamin C of an orange! One kiwi provides over 100% of your daily Vitamin C needs.'},
+  {cat:'🍕 Food',diff:'easy',q:'What is the most popular pizza topping in the USA?',opts:['Mushroom','Sausage','Pepperoni','Onion'],ans:2,fact:'Pepperoni accounts for 36% of all pizza orders in the USA. Americans consume roughly 3 billion pizzas per year.'},
+  {cat:'🍕 Food',diff:'medium',q:'Which country is the largest producer of cocoa beans?',opts:['Belgium','Switzerland','Ivory Coast','Ghana'],ans:2,fact:"Ivory Coast produces about 40% of the world's cocoa beans, making it the world's top cocoa producer."},
+  {cat:'🍕 Food',diff:'easy',q:'What is the most consumed beverage in the world after water?',opts:['Coffee','Beer','Tea','Soda'],ans:2,fact:'Tea is the second most consumed beverage globally. China, India, and Kenya are the top producers.'},
+  {cat:'🍕 Food',diff:'medium',q:'Which fast food chain has the most locations worldwide?',opts:["McDonald's",'Subway','Starbucks','KFC'],ans:1,fact:'Subway has over 37,000 locations in 100+ countries. McDonald has about 40,000 but in fewer countries.'},
+  {cat:'🍕 Food',diff:'easy',q:'What are the main spirits in a classic margarita?',opts:['Vodka and lime','Tequila and lime','Rum and mint','Gin and tonic'],ans:1,fact:"A classic margarita uses tequila and lime juice. It's the most popular cocktail in the United States."},
+  {cat:'🍕 Food',diff:'easy',q:'What is the main ingredient in hummus?',opts:['Lentils','Black beans','Chickpeas','White beans'],ans:2,fact:'Hummus is made from chickpeas, tahini, lemon juice, and garlic. It has been eaten in the Middle East for thousands of years.'},
+  {cat:'🍕 Food',diff:'medium',q:'What gives red wine its color?',opts:['The grape pulp','Added coloring','Tannins from grape skin','Fermentation'],ans:2,fact:'Red wine gets its color from anthocyanins — pigments in grape skins. White wine is made without skin contact.'},
+  {cat:'🍕 Food',diff:'hard',q:'Which country invented sushi?',opts:['China','Japan','Korea','Thailand'],ans:1,fact:'Sushi originated in Japan in the Edo period (1603-1868). Originally the rice was fermented as a preservative and discarded.'},
+  {cat:'🍕 Food',diff:'easy',q:'What is the spicy green paste served with sushi?',opts:['Ginger','Miso','Wasabi','Soy sauce'],ans:2,fact:'Wasabi is made from the Wasabia japonica plant. Most wasabi served outside Japan is actually horseradish dyed green.'},
+  {cat:'🍕 Food',diff:'medium',q:'Which nut is used to make marzipan?',opts:['Peanut','Walnut','Cashew','Almond'],ans:3,fact:'Marzipan is made from ground almonds and sugar. It originated in the Middle East and came to Europe during the Crusades.'},
+  // ── TV & REALITY ──
+  {cat:'📺 TV',diff:'easy',q:'What HBO show is set in the fictional land of Westeros?',opts:['The Witcher','Lord of the Rings','Game of Thrones','House of the Dragon'],ans:2,fact:'Game of Thrones ran from 2011-2019 and became the most watched HBO series ever with over 44 million viewers per episode.'},
+  {cat:'📺 TV',diff:'easy',q:'What Netflix show features women in a prison?',opts:['Ozark','Mindhunter','Orange Is the New Black','Narcos'],ans:2,fact:'Orange Is the New Black ran 7 seasons from 2013-2019 and was one of Netflix first major original series successes.'},
+  {cat:'📺 TV',diff:'medium',q:'Which show features amateur bakers competing in the UK?',opts:['MasterChef','Hell Kitchen','Great British Bake Off','Top Chef'],ans:2,fact:'The Great British Bake Off premiered in 2010 and became a national institution in the UK.'},
+  {cat:'📺 TV',diff:'easy',q:'Which long-running animated show features the Simpson family?',opts:['Family Guy','South Park','The Simpsons','Futurama'],ans:2,fact:'The Simpsons premiered in 1989 and is the longest-running American animated series and primetime scripted TV series ever.'},
+  {cat:'📺 TV',diff:'medium',q:'What show features Walter White cooking methamphetamine?',opts:['Ozark','Narcos','Breaking Bad','Dexter'],ans:2,fact:'Breaking Bad ran from 2008-2013 and is considered one of the greatest TV shows ever made.'},
+  {cat:'📺 TV',diff:'easy',q:'Which competition show is judged by Simon Cowell?',opts:['The Voice','Dancing with the Stars','American Idol','The Masked Singer'],ans:2,fact:'Simon Cowell was a judge on American Idol from 2002-2010 and is known for his brutally honest critiques.'},
+  {cat:'📺 TV',diff:'medium',q:'Which show features contestants stranded on an island for $1 million?',opts:['The Amazing Race','Fear Factor','Survivor','Big Brother'],ans:2,fact:'Survivor premiered in 2000 and is still running. It pioneered the modern reality competition format.'},
+  {cat:'📺 TV',diff:'medium',q:'Which drama features the Roy family fighting over their media empire?',opts:['Billions','Succession','Yellowstone','Entourage'],ans:1,fact:'Succession ran 4 seasons from 2018-2023 and won the Emmy for Outstanding Drama Series three years in a row.'},
+  {cat:'📺 TV',diff:'easy',q:'What streaming show features the Hawkins kids fighting the Upside Down?',opts:['Dark','Stranger Things','The OA','Lost in Space'],ans:1,fact:'Stranger Things premiered on Netflix in 2016 and became a massive hit, with Season 4 breaking Netflix viewing records.'},
+  {cat:'📺 TV',diff:'hard',q:'What is the most watched scripted TV broadcast in US history?',opts:['Super Bowl halftime','The Moon Landing','MASH Finale','Friends Finale'],ans:2,fact:'The MASH series finale in 1983 drew 106 million viewers — still the most watched scripted TV broadcast in US history.'},
+  {cat:'📺 TV',diff:'medium',q:'Which show on HBO stars Sarah Jessica Parker as Carrie Bradshaw?',opts:['Desperate Housewives','Gossip Girl','Sex and the City','Entourage'],ans:2,fact:'Sex and the City ran from 1998-2004 on HBO and became a massive cultural phenomenon redefining how women were portrayed on TV.'},
+  {cat:'📺 TV',diff:'easy',q:'What animated show features SpongeBob SquarePants?',opts:['Patrick Star Show','SpongeBob SquarePants','Bikini Bottom','Krabby Patty'],ans:1,fact:'SpongeBob SquarePants premiered in 1999 and has become the most distributed property of Nickelodeon.'},
+  {cat:'📺 TV',diff:'medium',q:'Which show features doctors at Seattle Grace Hospital?',opts:['ER','House MD','Greys Anatomy','Scrubs'],ans:2,fact:"Grey's Anatomy premiered in 2005 and is one of the longest-running primetime medical dramas in TV history."},
+  {cat:'📺 TV',diff:'hard',q:'What was the first TV show to be filmed in front of a live audience?',opts:['I Love Lucy','The Ed Sullivan Show','Texaco Star Theatre','Candid Camera'],ans:0,fact:'I Love Lucy (1951) was the first show to be filmed before a live studio audience using multiple cameras — a format still used today.'},
+  {cat:'📺 TV',diff:'easy',q:'In Friends, what is the name of the coffee shop where the gang hangs out?',opts:['Perk Up','Central Perk','Java Junction','The Brew'],ans:1,fact:"Central Perk is modeled after real New York cafes. A replica Central Perk pop-up opened in New York City for the show's 20th anniversary."},
+  // ── INTERNET & TECH ──
+  {cat:'🌐 Tech',diff:'easy',q:'Who founded Facebook?',opts:['Jack Dorsey','Elon Musk','Mark Zuckerberg','Jeff Bezos'],ans:2,fact:'Mark Zuckerberg co-founded Facebook in 2004 from his Harvard dorm room. It launched to the public in 2006.'},
+  {cat:'🌐 Tech',diff:'medium',q:'What year was YouTube founded?',opts:['2003','2004','2005','2006'],ans:2,fact:'YouTube was founded in February 2005 by three former PayPal employees. Google acquired it in 2006 for $1.65 billion.'},
+  {cat:'🌐 Tech',diff:'medium',q:'Which company owns Instagram?',opts:['Google','Twitter','Apple','Meta'],ans:3,fact:'Facebook (now Meta) acquired Instagram in 2012 for $1 billion. Now it is worth hundreds of billions.'},
+  {cat:'🌐 Tech',diff:'easy',q:'What does AI stand for?',opts:['Automated Intelligence','Artificial Intelligence','Advanced Interface','Autonomous Integration'],ans:1,fact:'Artificial Intelligence was first coined at a 1956 Dartmouth conference by John McCarthy.'},
+  {cat:'🌐 Tech',diff:'easy',q:'Which company makes the iPhone?',opts:['Samsung','Google','Microsoft','Apple'],ans:3,fact:'Apple introduced the iPhone in 2007. It revolutionized the smartphone industry and made Apple the most valuable company in the world.'},
+  {cat:'🌐 Tech',diff:'easy',q:'What platform is known for short videos with a For You Page?',opts:['Snapchat','Instagram','TikTok','YouTube Shorts'],ans:2,fact:'TikTok launched internationally in 2018 and reached 1 billion users faster than any other social media platform in history.'},
+  {cat:'🌐 Tech',diff:'medium',q:'Which company created Android?',opts:['Samsung','Microsoft','Google','Apple'],ans:2,fact:'Android Inc was founded in 2003 and acquired by Google in 2005. Android is now the most used mobile OS worldwide.'},
+  {cat:'🌐 Tech',diff:'hard',q:'What was the first website ever created?',opts:['Google.com','Amazon.com','Info.cern.ch','Yahoo.com'],ans:2,fact:'The first website was info.cern.ch, created by Tim Berners-Lee in 1991. It described the World Wide Web project itself.'},
+  {cat:'🌐 Tech',diff:'easy',q:'What is the name of Elon Musk space company?',opts:['Blue Origin','Virgin Galactic','SpaceX','Rocket Lab'],ans:2,fact:'SpaceX was founded in 2002. It became the first private company to send astronauts to the International Space Station.'},
+  {cat:'🌐 Tech',diff:'medium',q:'How many characters was the original Twitter tweet limit?',opts:['100','140','160','280'],ans:1,fact:'Twitter originally had a 140-character limit, doubling it to 280 in 2017. The limit was based on SMS text message constraints.'},
+  {cat:'🌐 Tech',diff:'hard',q:'What programming language was the first to be widely used?',opts:['Python','FORTRAN','C++','Java'],ans:1,fact:'FORTRAN was developed by IBM in 1957 and became the first widely used high-level programming language.'},
+  {cat:'🌐 Tech',diff:'easy',q:'What does GPS stand for?',opts:['General Positioning System','Global Positioning System','Geographic Position Satellite','Global Path System'],ans:1,fact:'GPS was developed by the US military and became available for civilian use in the 1980s. It uses 24+ satellites.'},
+  {cat:'🌐 Tech',diff:'medium',q:'Which company owns WhatsApp?',opts:['Apple','Google','Meta','Microsoft'],ans:2,fact:'Facebook (Meta) acquired WhatsApp in 2014 for $19 billion — one of the largest tech acquisitions ever at the time.'},
+  {cat:'🌐 Tech',diff:'easy',q:'What does USB stand for?',opts:['Universal Serial Bus','United System Board','Unified Storage Base','Universal Software Bridge'],ans:0,fact:'USB was developed in 1994 to standardize the connection of peripherals to computers. Over 10 billion USB devices are in use today.'},
+  {cat:'🌐 Tech',diff:'hard',q:'What year was the first iPhone released?',opts:['2005','2006','2007','2008'],ans:2,fact:'Steve Jobs announced the first iPhone on January 9, 2007, calling it a revolutionary product that combined phone, iPod, and internet device.'},
+  // ── BUSINESS ──
+  {cat:'💰 Business',diff:'medium',q:'Which company has the highest market cap in history?',opts:['Google','Apple','Microsoft','Amazon'],ans:1,fact:'Apple became the first US company to reach $1 trillion in market cap in 2018, later reaching $3 trillion in 2023.'},
+  {cat:'💰 Business',diff:'easy',q:'What does stock represent in a company?',opts:['The company inventory','A share of ownership','The company debt','Annual profits'],ans:1,fact:'Buying stock means buying a small piece of ownership in a company. If the company grows, your stock value increases.'},
+  {cat:'💰 Business',diff:'medium',q:'Which company was originally called BackRub?',opts:['Facebook','Amazon','Google','Yahoo'],ans:2,fact:'Google was originally called BackRub in 1996 because it analyzed back links. Larry Page and Sergey Brin renamed it Google in 1997.'},
+  {cat:'💰 Business',diff:'easy',q:'What does the Amazon logo arrow symbolize?',opts:['Speed of delivery','A smile from A to Z','The letter A','A river'],ans:1,fact:"The Amazon arrow goes from A to Z representing that Amazon sells everything from A to Z, and it also forms a smile."},
+  {cat:'💰 Business',diff:'medium',q:'Which billionaire founded Tesla and SpaceX?',opts:['Jeff Bezos','Bill Gates','Elon Musk','Larry Ellison'],ans:2,fact:'Elon Musk co-founded Tesla in 2003 and SpaceX in 2002. He also owns X (formerly Twitter) since 2022.'},
+  {cat:'💰 Business',diff:'easy',q:'What does ATM stand for?',opts:['Automated Teller Machine','Automatic Transfer Machine','Automated Transaction Monitor','Automatic Teller Module'],ans:0,fact:'The first ATM was installed by Barclays Bank in London in 1967. Today there are over 3 million ATMs worldwide.'},
+  {cat:'💰 Business',diff:'hard',q:'Which company was the first to reach $1 trillion market cap?',opts:['Apple','Amazon','Microsoft','Google'],ans:0,fact:'Apple hit $1 trillion in market cap on August 2, 2018, becoming the first publicly traded US company to reach that milestone.'},
+  {cat:'💰 Business',diff:'medium',q:'What is the world largest retailer by revenue?',opts:['Amazon','Costco','Target','Walmart'],ans:3,fact:'Walmart generated over $600 billion in revenue in 2023, making it the world largest retailer and employer with 2.3 million workers.'},
+  {cat:'💰 Business',diff:'easy',q:'What currency does Japan use?',opts:['Yuan','Won','Yen','Peso'],ans:2,fact:'The Japanese Yen has been Japan official currency since 1871. It is the third most traded currency in the world.'},
+  {cat:'💰 Business',diff:'medium',q:'What does IPO stand for in business?',opts:['Internal Profit Overview','Initial Public Offering','International Purchase Order','Investment Portfolio Option'],ans:1,fact:'An IPO is when a private company first sells its stock to the public. It is how companies raise large amounts of capital.'},
+  {cat:'💰 Business',diff:'hard',q:'Which country has the largest GDP in the world?',opts:['China','Japan','Germany','United States'],ans:3,fact:'The US has the world largest GDP at over $27 trillion. China is second at about $18 trillion and growing fast.'},
+  {cat:'💰 Business',diff:'medium',q:'Which company owns YouTube?',opts:['Meta','Microsoft','Apple','Google'],ans:3,fact:'Google acquired YouTube in October 2006 for $1.65 billion in stock. Now it generates over $30 billion annually.'},
+  {cat:'💰 Business',diff:'easy',q:'What does the Nike swoosh logo represent?',opts:['Speed','A checkmark','The wing of the Greek goddess Nike','A river'],ans:2,fact:'The Nike swoosh represents the wing of Nike, the Greek goddess of victory. It was designed by Carolyn Davidson in 1971 for just $35.'},
+  {cat:'💰 Business',diff:'hard',q:'What year was Amazon founded?',opts:['1992','1993','1994','1995'],ans:2,fact:'Jeff Bezos founded Amazon in 1994 in his garage in Bellevue, Washington. It originally only sold books online.'},
+  {cat:'💰 Business',diff:'medium',q:'What color are the Facebook thumbs up like buttons?',opts:['Green','Red','Blue','Purple'],ans:2,fact:'Facebook chose blue because Mark Zuckerberg is red-green colorblind and blue is the color he can see most clearly.'},
+  // ── MOVIES ──
+  {cat:'🎬 Movies',diff:'easy',q:'Which film features the line You gonna need a bigger boat?',opts:['The Abyss','Jaws','Titanic','The Perfect Storm'],ans:1,fact:'Jaws (1975) directed by Steven Spielberg is considered the first summer blockbuster. Roy Scheider ad-libbed that famous line.'},
+  {cat:'🎬 Movies',diff:'medium',q:'Which actor played Iron Man in the MCU?',opts:['Chris Evans','Chris Hemsworth','Robert Downey Jr','Mark Ruffalo'],ans:2,fact:'Robert Downey Jr played Tony Stark in 10 MCU films. His casting in 2008 was considered a risk due to his past troubles.'},
+  {cat:'🎬 Movies',diff:'easy',q:'What is the name of the toy cowboy in Toy Story?',opts:['Buzz','Woody','Rex','Hamm'],ans:1,fact:'Woody is voiced by Tom Hanks in all four Toy Story films. Hanks said voicing Woody was one of his most meaningful roles.'},
+  {cat:'🎬 Movies',diff:'medium',q:'Who directed the movie Titanic?',opts:['Steven Spielberg','Christopher Nolan','James Cameron','Ridley Scott'],ans:2,fact:'James Cameron directed Titanic (1997) and Avatar (2009) — the two highest-grossing films ever for many years.'},
+  {cat:'🎬 Movies',diff:'easy',q:'What studio produced The Lion King?',opts:['Pixar','DreamWorks','Sony Pictures','Disney'],ans:3,fact:'The Lion King (1994) was inspired by Shakespeare Hamlet and African culture.'},
+  {cat:'🎬 Movies',diff:'medium',q:'Which actress plays Katniss in The Hunger Games?',opts:['Emma Watson','Jennifer Lawrence','Shailene Woodley','Emma Stone'],ans:1,fact:'Jennifer Lawrence was 21 when she filmed The Hunger Games. She was the second-youngest Best Actress Oscar winner ever.'},
+  {cat:'🎬 Movies',diff:'easy',q:'What color pill does Neo take in The Matrix?',opts:['Blue pill','Green pill','Red pill','White pill'],ans:2,fact:'The red pill represents truth while the blue pill represents comfortable illusion. It has become a major cultural metaphor.'},
+  {cat:'🎬 Movies',diff:'medium',q:'Which movie features the fictional African nation of Wakanda?',opts:['Avengers','Captain America','Black Panther','Thor'],ans:2,fact:'Black Panther (2018) was the first superhero film nominated for Best Picture at the Academy Awards.'},
+  {cat:'🎬 Movies',diff:'easy',q:'What is the name of the wizard school in Harry Potter?',opts:['Beauxbatons','Durmstrang','Hogwarts','Ilvermorny'],ans:2,fact:'Hogwarts is divided into four houses: Gryffindor, Hufflepuff, Ravenclaw, and Slytherin.'},
+  {cat:'🎬 Movies',diff:'hard',q:'What was the first Pixar feature film?',opts:['A Bugs Life','Finding Nemo','Toy Story','Monsters Inc'],ans:2,fact:'Toy Story (1995) was the first feature-length computer-animated film in history. It grossed $373 million on a $30 million budget.'},
+  {cat:'🎬 Movies',diff:'medium',q:'Who played the Joker in The Dark Knight?',opts:['Jared Leto','Joaquin Phoenix','Heath Ledger','Jack Nicholson'],ans:2,fact:'Heath Ledger won a posthumous Academy Award for his role. He died in January 2008, months before the film release.'},
+  {cat:'🎬 Movies',diff:'easy',q:'What animated film features a character named Simba?',opts:['Bambi','The Jungle Book','The Lion King','Tarzan'],ans:2,fact:'Simba means lion in Swahili. The Lion King stage adaptation has grossed over $9 billion, more than any entertainment title in history.'},
+  {cat:'🎬 Movies',diff:'medium',q:'Which horror film features the line Here is Johnny?',opts:['Psycho','Halloween','The Shining','It'],ans:2,fact:'Jack Nicholson improvised that line referencing Ed McMahon intro of Johnny Carson. Kubrick almost cut the scene.'},
+  {cat:'🎬 Movies',diff:'hard',q:'Which film won the first ever Academy Award for Best Picture?',opts:['All Quiet on the Western Front','Wings','The Jazz Singer','Sunrise'],ans:1,fact:'Wings (1927) won the first Academy Award for Outstanding Picture at the 1st Academy Awards ceremony in 1929.'},
+  {cat:'🎬 Movies',diff:'medium',q:'What Disney film features the song Let It Go?',opts:['Tangled','Brave','Frozen','Moana'],ans:2,fact:'Frozen (2013) won two Academy Awards and Let It Go became one of the most recognized Disney songs ever recorded.'},
+  // ── SPORTS EXTRA ──
+  {cat:'⚽ Sports',diff:'easy',q:'How many points is a touchdown in American football?',opts:['4','6','7','8'],ans:1,fact:'A touchdown is worth 6 points. Teams can then attempt a 1-point extra kick or a 2-point conversion.'},
+  {cat:'⚽ Sports',diff:'easy',q:'How many players are on a soccer team on the field?',opts:['9','10','11','12'],ans:2,fact:'Each soccer team has 11 players including the goalkeeper. FIFA standardized the rules in 1863 in London.'},
+  {cat:'⚽ Sports',diff:'hard',q:'Who holds the record for most Olympic gold medals?',opts:['Carl Lewis','Usain Bolt','Michael Phelps','Mark Spitz'],ans:2,fact:'Michael Phelps has 23 Olympic gold medals — the most of any Olympian ever. He won 8 gold medals at the 2008 Beijing Olympics.'},
+  {cat:'⚽ Sports',diff:'medium',q:'What sport is played at Wimbledon?',opts:['Cricket','Croquet','Tennis','Badminton'],ans:2,fact:'Wimbledon is the oldest tennis tournament in the world, dating back to 1877. Players must wear all-white clothing.'},
+  {cat:'⚽ Sports',diff:'easy',q:'How many holes are in a standard round of golf?',opts:['9','12','18','24'],ans:2,fact:'18 holes became standard in 1764 when the Royal and Ancient Golf Club of St Andrews reduced their course from 22 holes.'},
+  {cat:'⚽ Sports',diff:'hard',q:'What year did women first compete in the Olympics?',opts:['1896','1900','1920','1928'],ans:1,fact:'Women first competed in the 1900 Paris Olympics in tennis and golf. There were 22 female athletes out of 997 total.'},
+  {cat:'⚽ Sports',diff:'easy',q:'Which NFL team has won the most Super Bowls?',opts:['Dallas Cowboys','San Francisco 49ers','New England Patriots','Pittsburgh Steelers'],ans:2,fact:'New England Patriots and Pittsburgh Steelers are tied with 6 Super Bowl wins each, the most in NFL history.'},
+  {cat:'⚽ Sports',diff:'medium',q:'Which country has won the most Rugby World Cups?',opts:['England','Australia','New Zealand','South Africa'],ans:2,fact:"New Zealand's All Blacks have won the Rugby World Cup 3 times — more than any other nation."},
+  {cat:'⚽ Sports',diff:'easy',q:'How long is an Olympic swimming pool?',opts:['25m','50m','75m','100m'],ans:1,fact:'Olympic swimming pools are 50 meters long and 25 meters wide with 10 lanes.'},
+  {cat:'⚽ Sports',diff:'medium',q:'What is scoring three goals in soccer by one player called?',opts:['Hat trick','Turkey','Triple','Treble'],ans:0,fact:'A hat trick means one player scoring 3 goals in a match. Ronaldo and Messi hold records for most career hat tricks.'},
+  {cat:'⚽ Sports',diff:'medium',q:'Who invented the sport of basketball?',opts:['James Naismith','Dr. Seuss','William Morgan','Walter Camp'],ans:0,fact:'Canadian Dr. James Naismith invented basketball in Springfield, Massachusetts in 1891. He used peach baskets as the first hoops.'},
+  {cat:'⚽ Sports',diff:'easy',q:'Which country hosted the 2016 Summer Olympics?',opts:['Japan','China','Brazil','UK'],ans:2,fact:'Rio de Janeiro, Brazil hosted the 2016 Summer Olympics — the first to be held in South America.'},
+  {cat:'⚽ Sports',diff:'hard',q:'How many laps is an Olympic marathon?',opts:['The marathon is not run on a track','2 laps','4 laps','6 laps'],ans:0,fact:'The marathon is a road race of 26.2 miles (42.195 km), not run on a track. It commemorates the run of Pheidippides from Marathon to Athens.'},
+  {cat:'⚽ Sports',diff:'medium',q:'In boxing, how long is each round?',opts:['2 minutes','3 minutes','4 minutes','5 minutes'],ans:1,fact:'Professional boxing rounds are 3 minutes long with 1-minute rest between rounds.'},
+  {cat:'⚽ Sports',diff:'easy',q:'What is the highest possible score in a single turn in bowling?',opts:['200','250','300','350'],ans:2,fact:'A perfect game in bowling is 300, achieved by rolling 12 consecutive strikes. Very few bowlers ever achieve this.'},
+  // ── HISTORY EXTRA ──
+  {cat:'📚 History',diff:'easy',q:'Who was the first President of the United States?',opts:['John Adams','Benjamin Franklin','Thomas Jefferson','George Washington'],ans:3,fact:'George Washington served two terms from 1789-1797. He refused a third term, setting the precedent for a two-term limit.'},
+  {cat:'📚 History',diff:'medium',q:'What year did Christopher Columbus reach the Americas?',opts:['1488','1492','1496','1502'],ans:1,fact:'Columbus landed in the Bahamas on October 12, 1492. He believed he had reached Asia and never knew he found a new continent.'},
+  {cat:'📚 History',diff:'hard',q:'Which ancient civilization built Machu Picchu?',opts:['Aztec','Maya','Inca','Olmec'],ans:2,fact:'The Inca built Machu Picchu around 1450 CE in what is now Peru. It was abandoned during the Spanish Conquest.'},
+  {cat:'📚 History',diff:'easy',q:'What was the name of the first atomic bomb dropped on Japan?',opts:['Fat Man','Big Boy','Little Boy','Thin Man'],ans:2,fact:'Little Boy was dropped on Hiroshima on August 6, 1945. Fat Man was dropped on Nagasaki three days later.'},
+  {cat:'📚 History',diff:'medium',q:'Which country was first to give women the right to vote?',opts:['USA','UK','Australia','New Zealand'],ans:3,fact:'New Zealand granted women the right to vote in 1893, becoming the first self-governing country to do so.'},
+  {cat:'📚 History',diff:'easy',q:'Who wrote the Declaration of Independence?',opts:['George Washington','John Adams','Thomas Jefferson','Benjamin Franklin'],ans:2,fact:'Thomas Jefferson was the primary author of the Declaration of Independence in 1776.'},
+  {cat:'📚 History',diff:'hard',q:'How long did the Hundred Years War last?',opts:['100 years','116 years','99 years','87 years'],ans:1,fact:'The Hundred Years War between England and France lasted 116 years from 1337 to 1453. Joan of Arc fought in it.'},
+  {cat:'📚 History',diff:'medium',q:'Which ship sank on its maiden voyage in 1912?',opts:['The Lusitania','The Britannic','The Titanic','The Olympic'],ans:2,fact:'RMS Titanic sank on April 15, 1912 after hitting an iceberg. Over 1,500 of the 2,224 people aboard died.'},
+  {cat:'📚 History',diff:'hard',q:'What was the name of the first human to orbit Earth?',opts:['Neil Armstrong','Buzz Aldrin','Yuri Gagarin','Alan Shepard'],ans:2,fact:'Yuri Gagarin orbited Earth on April 12, 1961 aboard Vostok 1. His flight lasted 108 minutes.'},
+  {cat:'📚 History',diff:'easy',q:'Who was the first female Prime Minister of the UK?',opts:['Theresa May','Angela Merkel','Margaret Thatcher','Indira Gandhi'],ans:2,fact:'Margaret Thatcher served as UK Prime Minister from 1979-1990, the longest serving PM of the 20th century.'},
+  {cat:'📚 History',diff:'medium',q:'What language did ancient Romans speak?',opts:['Greek','Italian','Latin','Roman'],ans:2,fact:'Latin was spoken throughout the Roman Empire and is the ancestor of Spanish, French, Italian, Portuguese, and Romanian.'},
+  {cat:'📚 History',diff:'medium',q:'What US project successfully landed humans on the Moon?',opts:['Project Mercury','Project Gemini','Apollo Program','Project Artemis'],ans:2,fact:'NASA Apollo Program successfully landed 12 astronauts on the Moon between 1969 and 1972 across 6 missions.'},
+  {cat:'📚 History',diff:'easy',q:'Which wall separated East and West Germany?',opts:['The Iron Curtain','The Berlin Wall','The Warsaw Wall','The Dresden Divide'],ans:1,fact:'The Berlin Wall was built in 1961 and stood for 28 years before falling in 1989. It was 96 miles long.'},
+  {cat:'📚 History',diff:'hard',q:'Which empire was the largest contiguous land empire in history?',opts:['British Empire','Roman Empire','Mongol Empire','Ottoman Empire'],ans:2,fact:'The Mongol Empire at its peak covered 24 million km squared — about 16% of Earth total land area.'},
+  {cat:'📚 History',diff:'easy',q:'In which country did the French Revolution take place?',opts:['Belgium','France','Switzerland','Italy'],ans:1,fact:'The French Revolution began in 1789 with the storming of the Bastille. It ended the monarchy and led to Napoleon rise.'},
+  // ── SCIENCE EXTRA ──
+  {cat:'🧬 Science',diff:'easy',q:'What planet is known as the Red Planet?',opts:['Venus','Jupiter','Mars','Saturn'],ans:2,fact:'Mars appears red due to iron oxide (rust) on its surface. NASA has sent multiple rovers there.'},
+  {cat:'🧬 Science',diff:'medium',q:'What is the smallest planet in our solar system?',opts:['Mars','Venus','Mercury','Pluto'],ans:2,fact:'Mercury is the smallest planet. Pluto was reclassified as a dwarf planet in 2006.'},
+  {cat:'🧬 Science',diff:'easy',q:'What is H2O?',opts:['Salt','Water','Hydrogen peroxide','Oxygen'],ans:1,fact:'H2O means 2 hydrogen atoms bonded to 1 oxygen atom. Water covers 71% of Earth.'},
+  {cat:'🧬 Science',diff:'hard',q:'How many elements are in the periodic table?',opts:['108','118','128','138'],ans:1,fact:'The periodic table has 118 confirmed elements. Element 118, Oganesson, is the heaviest known element.'},
+  {cat:'🧬 Science',diff:'medium',q:'What is the largest organ in the human body?',opts:['Liver','Brain','Lungs','Skin'],ans:3,fact:'The skin is the largest organ, covering about 2 square meters and weighing 3-4kg in an adult.'},
+  {cat:'🧬 Science',diff:'easy',q:'What force causes objects to fall?',opts:['Magnetism','Friction','Gravity','Inertia'],ans:2,fact:'Gravity is the attractive force between masses. Newton formulated the law of universal gravitation after observing a falling apple.'},
+  {cat:'🧬 Science',diff:'medium',q:'What is the chemical formula for table salt?',opts:['NaCl','KCl','MgSO4','CaCO3'],ans:0,fact:'Table salt is sodium chloride (NaCl). It is essential for nerve function, fluid balance, and muscle contraction.'},
+  {cat:'🧬 Science',diff:'easy',q:'How many teeth does an adult human have?',opts:['28','30','32','34'],ans:2,fact:'Adults have 32 teeth including 4 wisdom teeth. Many people have their wisdom teeth removed as they often cause crowding.'},
+  {cat:'🧬 Science',diff:'medium',q:'What is the name of the galaxy we live in?',opts:['Andromeda','Triangulum','Milky Way','Whirlpool'],ans:2,fact:'The Milky Way contains 100-400 billion stars and is about 100,000 light-years across.'},
+  {cat:'🧬 Science',diff:'easy',q:'What do bees collect to make honey?',opts:['Dew','Pollen','Nectar','Sap'],ans:2,fact:'Bees collect nectar from flowers and convert it to honey. One bee makes only 1/12 teaspoon in its entire lifetime.'},
+  {cat:'🧬 Science',diff:'medium',q:'What is the hardest natural substance on Earth?',opts:['Platinum','Quartz','Titanium','Diamond'],ans:3,fact:'Diamond scores 10 on the Mohs hardness scale — the maximum. Diamonds are made of carbon atoms in a crystal structure.'},
+  {cat:'🧬 Science',diff:'medium',q:'Which blood type is the universal donor?',opts:['A+','AB+','O-','O+'],ans:2,fact:'O- blood can be given to anyone regardless of blood type, making it critical in emergencies.'},
+  {cat:'🧬 Science',diff:'hard',q:'What is the longest bone in the human body?',opts:['Spine','Tibia','Humerus','Femur'],ans:3,fact:'The femur (thigh bone) is the longest and strongest bone, making up about a quarter of a person height.'},
+  {cat:'🧬 Science',diff:'hard',q:'What is the process by which plants make food?',opts:['Respiration','Fermentation','Photosynthesis','Osmosis'],ans:2,fact:'Photosynthesis converts CO2 and water into glucose using sunlight. It produces the oxygen we breathe.'},
+  {cat:'🧬 Science',diff:'easy',q:'How many hearts does an octopus have?',opts:['1','2','3','4'],ans:2,fact:'Octopuses have 3 hearts: two pump blood to the gills and one pumps it to the rest of the body. Their blood is blue.'},
+  // ── GEOGRAPHY EXTRA ──
+  {cat:'🌍 Geography',diff:'easy',q:'What is the capital of France?',opts:['Lyon','Marseille','Paris','Bordeaux'],ans:2,fact:'Paris has been the capital of France for over 1,000 years and is home to the Eiffel Tower and the Louvre.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the capital of Japan?',opts:['Osaka','Kyoto','Hiroshima','Tokyo'],ans:3,fact:'Tokyo is the world most populous metropolitan area with about 37 million people.'},
+  {cat:'🌍 Geography',diff:'hard',q:'Which country has the longest coastline?',opts:['Russia','Norway','USA','Canada'],ans:3,fact:'Canada has the world longest coastline at 202,080 km — about 15% of the world total coastline.'},
+  {cat:'🌍 Geography',diff:'medium',q:'What is the deepest lake in the world?',opts:['Lake Superior','Caspian Sea','Lake Baikal','Lake Tanganyika'],ans:2,fact:'Lake Baikal in Siberia is 1,642 meters deep and contains about 20% of the world unfrozen fresh surface water.'},
+  {cat:'🌍 Geography',diff:'easy',q:'Which ocean is the largest?',opts:['Atlantic','Indian','Arctic','Pacific'],ans:3,fact:'The Pacific Ocean covers about 165 million km squared — larger than all of Earth land combined.'},
+  {cat:'🌍 Geography',diff:'medium',q:'What is the tallest waterfall in the world?',opts:['Niagara Falls','Victoria Falls','Angel Falls','Iguazu Falls'],ans:2,fact:'Angel Falls in Venezuela is 979 meters tall — nearly 20 times the height of Niagara Falls.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the capital of Brazil?',opts:['Sao Paulo','Rio de Janeiro','Brasilia','Salvador'],ans:2,fact:'Brasilia became Brazil capital in 1960 and was purpose-built and designed in just 41 months.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the largest desert in the world?',opts:['Sahara','Gobi','Arabian','Antarctic'],ans:3,fact:'The Antarctic Desert is the largest at 14.2 million km squared. The Sahara is the largest HOT desert.'},
+  {cat:'🌍 Geography',diff:'hard',q:'What is the most spoken language by native speakers?',opts:['English','Spanish','Hindi','Mandarin Chinese'],ans:3,fact:'Mandarin Chinese has about 920 million native speakers. English is third by native speakers but first by total speakers.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which country has the most UNESCO World Heritage Sites?',opts:['China','France','Spain','Italy'],ans:3,fact:'Italy has 58 UNESCO World Heritage Sites — the most of any country, including the Colosseum and Venice.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What river flows through Egypt?',opts:['Congo','Amazon','Nile','Tigris'],ans:2,fact:'The Nile flows north through Egypt. Ancient Egyptian civilization depended entirely on its annual floods.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which is the only country that is also a continent?',opts:['Greenland','New Zealand','Australia','Antarctica'],ans:2,fact:'Australia is both a country and a continent, making it unique in the world.'},
+  {cat:'🌍 Geography',diff:'hard',q:'How many countries share a border with China?',opts:['10','12','14','16'],ans:2,fact:'China shares borders with 14 countries — more than any other country except Russia, which also borders 14 nations.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the capital of Australia?',opts:['Sydney','Melbourne','Brisbane','Canberra'],ans:3,fact:'Canberra is the capital, not Sydney! It was purpose-built to settle a rivalry between Sydney and Melbourne.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which European country has the most castles?',opts:['France','England','Germany','Scotland'],ans:2,fact:'Germany has over 20,000 castles and castle ruins — more than any other country.'},
+  // ── RANDOM FUN ──
+  {cat:'🎲 Random',diff:'easy',q:'How many sides does a hexagon have?',opts:['5','6','7','8'],ans:1,fact:'A hexagon has 6 sides. Honeybees build hives in hexagonal cells because it is the most efficient shape for storage.'},
+  {cat:'🎲 Random',diff:'hard',q:'How many hearts does an octopus have?',opts:['1','2','3','4'],ans:2,fact:'Octopuses have 3 hearts and blue blood. Two hearts pump blood to gills and one pumps it to the rest of the body.'},
+  {cat:'🎲 Random',diff:'easy',q:'What color is a polar bear skin underneath its fur?',opts:['White','Pink','Black','Grey'],ans:2,fact:'Polar bears have black skin to absorb heat and transparent fur that appears white due to light reflection.'},
+  {cat:'🎲 Random',diff:'medium',q:'How many languages are spoken in the world today?',opts:['About 1,000','About 3,000','About 7,000','About 10,000'],ans:2,fact:'There are about 7,000 languages spoken worldwide, but half the world population speaks just 23 of them.'},
+  {cat:'🎲 Random',diff:'easy',q:'What is the fear of spiders called?',opts:['Claustrophobia','Arachnophobia','Agoraphobia','Acrophobia'],ans:1,fact:'Arachnophobia affects about 5% of the population. It is one of the most common phobias worldwide.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the most recycled material in the world?',opts:['Paper','Glass','Plastic','Steel'],ans:3,fact:'Steel is the most recycled material globally. Over 80 million tons are recycled each year.'},
+  {cat:'🎲 Random',diff:'easy',q:'How many colors are in a rainbow?',opts:['5','6','7','8'],ans:2,fact:'A rainbow has 7 colors: red, orange, yellow, green, blue, indigo, and violet. Remembered as ROYGBIV.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the world fastest land animal?',opts:['Lion','Pronghorn Antelope','Cheetah','Greyhound'],ans:2,fact:'The cheetah can reach 70-75 mph in short bursts and accelerates from 0 to 60 mph in just 3 seconds.'},
+  {cat:'🎲 Random',diff:'easy',q:'How many days are in a leap year?',opts:['364','365','366','367'],ans:2,fact:'A leap year has 366 days, with February having 29 days. Leap years occur every 4 years to keep the calendar aligned with orbit.'},
+  {cat:'🎲 Random',diff:'hard',q:'How many muscles does it take to smile?',opts:['6','12','17','43'],ans:2,fact:'It takes about 17 muscles to smile and 43 to frown — so smiling really is easier.'},
+  {cat:'🎲 Random',diff:'medium',q:'How long does it take light from Proxima Centauri to reach Earth?',opts:['1 year','4.2 years','10 years','100 years'],ans:1,fact:'Proxima Centauri is 4.24 light-years away. It is the closest star to our solar system besides the Sun.'},
+  {cat:'🎲 Random',diff:'easy',q:'What is the longest word in the English language?',opts:['Pneumonoultramicroscopicsilicovolcanoconiosis','Supercalifragilisticexpialidocious','Antidisestablishmentarianism','Hippopotomonstrosesquippedaliophobia'],ans:0,fact:'Pneumonoultramicroscopicsilicovolcanoconiosis has 45 letters and refers to a lung disease caused by fine silica dust.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the most common birthday in the USA?',opts:['July 4th','September 9th','October 5th','January 1st'],ans:1,fact:'September 9th is the most common US birthday, likely because many babies are conceived around the holidays in December.'},
+  {cat:'🎲 Random',diff:'easy',q:'What is the name of the largest planet in our solar system?',opts:['Saturn','Uranus','Neptune','Jupiter'],ans:3,fact:'Jupiter is so large that all other planets in our solar system could fit inside it. It has at least 95 known moons.'},
+  {cat:'🎲 Random',diff:'hard',q:'What percentage of the ocean has been explored?',opts:['5%','20%','50%','80%'],ans:1,fact:'Humans have explored only about 20% of the ocean floor. The deep sea remains one of Earth greatest mysteries.'},
+
+  // ── MORE POP CULTURE ──
+  {cat:'🎬 Pop Culture',diff:'easy',q:'Which superhero is known as the Man of Steel?',opts:['Batman','Iron Man','Superman','Thor'],ans:2,fact:'Superman was created by Jerry Siegel and Joe Shuster in 1938. His weakness is Kryptonite, a radioactive mineral from his home planet.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'What is the name of Batman real identity?',opts:['Clark Kent','Peter Parker','Bruce Wayne','Tony Stark'],ans:2,fact:'Bruce Wayne witnessed his parents murder as a child and vowed to fight crime. He first appeared in Detective Comics in 1939.'},
+  {cat:'🎬 Pop Culture',diff:'easy',q:'Which Disney princess has a magical dress that changes color?',opts:['Cinderella','Sleeping Beauty','Snow White','Ariel'],ans:1,fact:"Aurora's dress in Sleeping Beauty famously changes between blue and pink as the fairies Flora and Merryweather argue about the color."},
+  {cat:'🎬 Pop Culture',diff:'hard',q:'What year did Disneyland open?',opts:['1950','1953','1955','1960'],ans:2,fact:'Disneyland opened on July 17, 1955 in Anaheim, California. Walt Disney called it the happiest place on Earth.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'Which show features the character Sheldon Cooper?',opts:['How I Met Your Mother','Two and a Half Men','The Big Bang Theory','Modern Family'],ans:2,fact:'The Big Bang Theory ran 12 seasons from 2007-2019. Jim Parsons won 4 Emmy Awards for playing Sheldon Cooper.'},
+  {cat:'🎬 Pop Culture',diff:'easy',q:'What is the highest-grossing film franchise of all time?',opts:['Star Wars','Harry Potter','James Bond','Marvel Cinematic Universe'],ans:3,fact:'The MCU has grossed over $29 billion at the global box office, making it the highest-grossing film franchise ever.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'Which magazine is the best-selling monthly magazine in the US?',opts:['People','National Geographic','AARP The Magazine','Time'],ans:2,fact:"AARP The Magazine has the largest circulation of any US magazine with over 23 million subscribers."},
+  {cat:'🎬 Pop Culture',diff:'easy',q:'What is the name of Simba father in The Lion King?',opts:['Scar','Rafiki','Mufasa','Pumba'],ans:2,fact:'Mufasa is voiced by James Earl Jones in the original 1994 film. His death scene is one of the most emotional in Disney history.'},
+  {cat:'🎬 Pop Culture',diff:'hard',q:'What was the first video game ever made?',opts:['Pong','Space Invaders','Tennis for Two','Pac-Man'],ans:2,fact:'Tennis for Two was created by physicist William Higinbotham in 1958. Pong (1972) was the first commercially successful arcade game.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'Which rapper had a beef with Drake in 2024?',opts:['Jay-Z','Kendrick Lamar','J. Cole','Lil Wayne'],ans:1,fact:'Kendrick Lamar and Drake had a major rap beef in 2024. Not Like Us by Kendrick became one of the most streamed diss tracks ever.'},
+  {cat:'🎬 Pop Culture',diff:'easy',q:'What social platform is known for disappearing photo messages?',opts:['Instagram','TikTok','Snapchat','BeReal'],ans:2,fact:'Snapchat launched in 2011 and pioneered disappearing content. The concept was later copied by Instagram Stories and others.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'Which animated film features a rat who wants to be a chef?',opts:['A Bugs Life','Ratatouille','Stuart Little','Gnomeo and Juliet'],ans:1,fact:"Ratatouille (2007) won the Academy Award for Best Animated Feature. The film's title is also the name of a French vegetable dish."},
+  {cat:'🎬 Pop Culture',diff:'easy',q:'What is the name of the boy in The Jungle Book?',opts:['Simba','Bambi','Mowgli','Tarzan'],ans:2,fact:'Mowgli is raised by wolves in the jungle of India. The Jungle Book was written by Rudyard Kipling in 1894.'},
+  {cat:'🎬 Pop Culture',diff:'hard',q:'Which band has the most #1 hits on the Billboard Hot 100?',opts:['The Beatles','Mariah Carey','Elvis Presley','Drake'],ans:0,fact:'The Beatles have 20 number-one singles on the Billboard Hot 100 — more than any other act in history.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'What app uses a ghost as its logo?',opts:['WhatsApp','Telegram','Snapchat','Signal'],ans:2,fact:'The Snapchat ghost logo was drawn by founder Evan Spiegel. The ghost represents the ephemeral nature of disappearing snaps.'},
+  // ── MORE SCIENCE ──
+  {cat:'🧬 Science',diff:'easy',q:'What is the closest planet to the Sun?',opts:['Venus','Earth','Mars','Mercury'],ans:3,fact:'Mercury is the closest planet to the Sun at about 36 million miles away. Despite being closest, Venus is actually hotter.'},
+  {cat:'🧬 Science',diff:'medium',q:'What gas do plants absorb during photosynthesis?',opts:['Oxygen','Nitrogen','Carbon Dioxide','Hydrogen'],ans:2,fact:'Plants absorb CO2 and release oxygen. Every year, plants absorb about 2.6 billion tons of carbon dioxide.'},
+  {cat:'🧬 Science',diff:'easy',q:'What is the center of an atom called?',opts:['Proton','Nucleus','Electron','Neutron'],ans:1,fact:'The nucleus contains protons and neutrons. Electrons orbit the nucleus. The nucleus is incredibly dense but tiny.'},
+  {cat:'🧬 Science',diff:'hard',q:'What is the name of the theory that describes the origin of the universe?',opts:['String Theory','Dark Matter Theory','The Big Bang Theory','Steady State Theory'],ans:2,fact:'The Big Bang Theory states the universe began about 13.8 billion years ago from an extremely hot dense point and has been expanding since.'},
+  {cat:'🧬 Science',diff:'medium',q:'How many bones are in the human hand?',opts:['19','27','32','35'],ans:1,fact:'Each hand has 27 bones: 8 carpal bones, 5 metacarpals, and 14 phalanges (finger bones). The hand is one of the most complex structures in the body.'},
+  {cat:'🧬 Science',diff:'easy',q:'What is the study of earthquakes called?',opts:['Meteorology','Seismology','Volcanology','Geology'],ans:1,fact:'Seismology studies earthquakes and seismic waves. The Richter Scale measures earthquake magnitude. About 500,000 earthquakes occur each year.'},
+  {cat:'🧬 Science',diff:'medium',q:'What is the most abundant element in the universe?',opts:['Oxygen','Carbon','Helium','Hydrogen'],ans:3,fact:'Hydrogen makes up about 75% of all matter in the universe. Stars including our Sun are mostly hydrogen.'},
+  {cat:'🧬 Science',diff:'hard',q:'What is the name of the scientist who developed the theory of relativity?',opts:['Isaac Newton','Stephen Hawking','Albert Einstein','Niels Bohr'],ans:2,fact:'Albert Einstein published his special theory of relativity in 1905 and general theory in 1915. E=mc2 is his most famous equation.'},
+  {cat:'🧬 Science',diff:'easy',q:'What organ pumps blood through the body?',opts:['Liver','Kidney','Lungs','Heart'],ans:3,fact:'The heart beats about 100,000 times per day and pumps about 2,000 gallons of blood through 60,000 miles of blood vessels.'},
+  {cat:'🧬 Science',diff:'medium',q:'What planet has rings around it?',opts:['Jupiter','Mars','Saturn','Neptune'],ans:2,fact:"Saturn's rings are made of ice and rock particles ranging from tiny grains to chunks as large as houses. All gas giants have rings but Saturn's are most visible."},
+  {cat:'🧬 Science',diff:'easy',q:'What is the boiling point of water in Celsius?',opts:['90','95','100','105'],ans:2,fact:'Water boils at 100 degrees Celsius (212 Fahrenheit) at sea level. At higher altitudes it boils at lower temperatures due to less air pressure.'},
+  {cat:'🧬 Science',diff:'hard',q:'How old is planet Earth?',opts:['2.5 billion years','3.5 billion years','4.5 billion years','5.5 billion years'],ans:2,fact:'Earth is approximately 4.54 billion years old, formed from a cloud of gas and dust surrounding the young Sun.'},
+  {cat:'🧬 Science',diff:'medium',q:'What is DNA short for?',opts:['Deoxyribonucleic Acid','Dextrose Nitrogen Acid','Dynamic Nuclear Arrangement','Deoxynitrogenous Amino Acid'],ans:0,fact:'DNA (Deoxyribonucleic Acid) is the molecule carrying genetic instructions for development and function of all living things.'},
+  {cat:'🧬 Science',diff:'easy',q:'How many planets are in our solar system?',opts:['7','8','9','10'],ans:1,fact:'Our solar system has 8 planets. Pluto was reclassified as a dwarf planet in 2006 by the International Astronomical Union.'},
+  {cat:'🧬 Science',diff:'hard',q:'What is the study of fungi called?',opts:['Botany','Zoology','Mycology','Phycology'],ans:2,fact:'Mycology is the branch of biology dealing with fungi. There are estimated to be 5.1 million species of fungi on Earth.'},
+  // ── MORE GEOGRAPHY ──
+  {cat:'🌍 Geography',diff:'easy',q:'Which country is home to the Great Wall?',opts:['Japan','Korea','Mongolia','China'],ans:3,fact:'The Great Wall of China stretches over 13,000 miles. It was built over many centuries to protect against northern invasions.'},
+  {cat:'🌍 Geography',diff:'medium',q:'What is the currency of the United Kingdom?',opts:['Euro','Pound Sterling','Franc','Krona'],ans:1,fact:'The British Pound Sterling is one of the oldest currencies in the world, dating back over 1,200 years.'},
+  {cat:'🌍 Geography',diff:'easy',q:'Which continent is Egypt on?',opts:['Asia','Europe','Africa','Middle East'],ans:2,fact:'Egypt is in northeastern Africa, though the Sinai Peninsula extends into Asia. It is one of the world oldest civilizations.'},
+  {cat:'🌍 Geography',diff:'hard',q:'What is the most visited country in the world?',opts:['USA','Spain','China','France'],ans:3,fact:'France receives about 90 million international tourists per year, making it the most visited country in the world.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which African country has the largest population?',opts:['Ethiopia','Kenya','Egypt','Nigeria'],ans:3,fact:'Nigeria has over 225 million people and is the most populous country in Africa and the 6th most populous in the world.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What body of water separates Europe from Africa?',opts:['Red Sea','Black Sea','Mediterranean Sea','Caspian Sea'],ans:2,fact:'The Mediterranean Sea separates Europe from Africa. At its narrowest point (Strait of Gibraltar) it is only 9 miles wide.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which South American country has the largest area?',opts:['Argentina','Colombia','Peru','Brazil'],ans:3,fact:'Brazil is the largest country in South America and the 5th largest in the world, covering nearly half the continent.'},
+  {cat:'🌍 Geography',diff:'hard',q:'What is the smallest continent by area?',opts:['Europe','Antarctica','Australia','South America'],ans:2,fact:'Australia is both the smallest continent and the largest country within a continent at 7.7 million km squared.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the capital of Canada?',opts:['Toronto','Vancouver','Montreal','Ottawa'],ans:3,fact:'Ottawa became Canada capital in 1857 when Queen Victoria chose it. Many people incorrectly think it is Toronto.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which mountain range runs along the western side of South America?',opts:['Rockies','Alps','Himalayas','Andes'],ans:3,fact:'The Andes is the longest continental mountain range at 4,300 miles. It runs through 7 South American countries.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the capital of Spain?',opts:['Barcelona','Seville','Valencia','Madrid'],ans:3,fact:'Madrid has been the capital of Spain since 1561. It is home to the Prado Museum, one of the world great art museums.'},
+  {cat:'🌍 Geography',diff:'hard',q:'How many time zones does Russia span?',opts:['9','11','13','15'],ans:1,fact:'Russia spans 11 time zones — the most of any country. From Kaliningrad in the west to Kamchatka in the east is 11 hours difference.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which country has the most natural wonders?',opts:['USA','Australia','China','Brazil'],ans:1,fact:'Australia has an unusually high concentration of natural wonders including the Great Barrier Reef, Uluru, and the Daintree Rainforest.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the tallest building in the world?',opts:['Shanghai Tower','One World Trade Center','CN Tower','Burj Khalifa'],ans:3,fact:'The Burj Khalifa in Dubai stands at 2,717 feet (828 meters) and has held the record of tallest building since 2010.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which country has the most islands?',opts:['Indonesia','Philippines','Greece','Sweden'],ans:3,fact:'Sweden has about 267,570 islands, the most of any country. Only about 1,000 are inhabited.'},
+  // ── MORE HISTORY ──
+  {cat:'📚 History',diff:'easy',q:'Who invented the light bulb?',opts:['Nikola Tesla','Benjamin Franklin','Thomas Edison','Alexander Graham Bell'],ans:2,fact:'Thomas Edison invented a practical incandescent light bulb in 1879. He also invented the phonograph and motion picture camera.'},
+  {cat:'📚 History',diff:'medium',q:'What was the first country to land on the Moon?',opts:['Russia','China','USA','UK'],ans:2,fact:'The USA landed on the Moon on July 20, 1969 with Apollo 11. Neil Armstrong was the first person to walk on the lunar surface.'},
+  {cat:'📚 History',diff:'hard',q:'Which disease killed the most people in history?',opts:['The Black Death','Smallpox','Spanish Flu','COVID-19'],ans:1,fact:'Smallpox killed an estimated 300-500 million people in the 20th century alone. It was eradicated in 1980 through vaccination.'},
+  {cat:'📚 History',diff:'easy',q:'What is the name of the ship Charles Darwin sailed on?',opts:['HMS Victory','HMS Endeavour','HMS Beagle','HMS Discovery'],ans:2,fact:'Darwin sailed on HMS Beagle from 1831-1836. His observations on this voyage led to his theory of evolution by natural selection.'},
+  {cat:'📚 History',diff:'medium',q:'In what country was the first Olympic Games held in modern times?',opts:['France','UK','Italy','Greece'],ans:3,fact:'The first modern Olympic Games were held in Athens, Greece in 1896. 241 athletes from 14 nations competed in 43 events.'},
+  {cat:'📚 History',diff:'easy',q:'Who was the first man to run a mile in under 4 minutes?',opts:['Jim Ryun','Roger Bannister','Sebastian Coe','Herb Elliott'],ans:1,fact:'Roger Bannister ran a mile in 3:59.4 on May 6, 1954 in Oxford. Many had believed a sub-4 minute mile was physically impossible.'},
+  {cat:'📚 History',diff:'hard',q:'What year was the Eiffel Tower built?',opts:['1885','1887','1889','1892'],ans:2,fact:'The Eiffel Tower was completed in 1889 for the World Fair celebrating the French Revolution centennial. It was initially criticized.'},
+  {cat:'📚 History',diff:'medium',q:'Which president signed the Emancipation Proclamation?',opts:['George Washington','Ulysses Grant','Abraham Lincoln','Andrew Johnson'],ans:2,fact:'Abraham Lincoln signed the Emancipation Proclamation on January 1, 1863, declaring enslaved people in Confederate states to be free.'},
+  {cat:'📚 History',diff:'easy',q:'What was the name of the first human to walk on the Moon?',opts:['Buzz Aldrin','Yuri Gagarin','Neil Armstrong','John Glenn'],ans:2,fact:'Neil Armstrong became the first human to walk on the Moon on July 20, 1969, speaking those famous words about giant leaps.'},
+  {cat:'📚 History',diff:'hard',q:'Which civilization invented the wheel?',opts:['Egyptian','Mesopotamian','Greek','Chinese'],ans:1,fact:'The Mesopotamians (modern-day Iraq) invented the wheel around 3500 BCE. It was first used for pottery, then transportation.'},
+  {cat:'📚 History',diff:'medium',q:'What was the name of the first successful powered airplane?',opts:['Spirit of St Louis','Kitty Hawk Flyer','Concorde','Sopwith Camel'],ans:1,fact:'The Wright Brothers Kitty Hawk Flyer made its first flight on December 17, 1903 in North Carolina, lasting 12 seconds.'},
+  {cat:'📚 History',diff:'easy',q:'Who was Martin Luther King Jr?',opts:['US President','Civil rights leader','Jazz musician','Military general'],ans:1,fact:'Dr. Martin Luther King Jr. was a Baptist minister who led the Civil Rights Movement. He was assassinated in 1968 at age 39.'},
+  {cat:'📚 History',diff:'medium',q:'Which war was fought between the North and South of the USA?',opts:['Revolutionary War','War of 1812','Civil War','Spanish American War'],ans:2,fact:'The American Civil War was fought from 1861-1865 over slavery and states rights. Over 620,000 soldiers died.'},
+  {cat:'📚 History',diff:'hard',q:'What year was the United Nations founded?',opts:['1942','1945','1948','1950'],ans:1,fact:'The United Nations was founded on October 24, 1945 after World War II to promote international peace and cooperation.'},
+  {cat:'📚 History',diff:'easy',q:'What document begins with We the People?',opts:['Declaration of Independence','Bill of Rights','Emancipation Proclamation','US Constitution'],ans:3,fact:'The US Constitution begins with We the People and was ratified in 1788. It is the oldest written national constitution still in use.'},
+  // ── MORE RANDOM FUN ──
+  {cat:'🎲 Random',diff:'easy',q:'How many seconds are in a minute?',opts:['30','45','60','90'],ans:2,fact:'There are 60 seconds in a minute, 60 minutes in an hour, and 24 hours in a day — a system inherited from ancient Babylon.'},
+  {cat:'🎲 Random',diff:'medium',q:'Which animal can sleep standing up?',opts:['Cows','Elephants','Horses','Both cows and horses'],ans:3,fact:'Both horses and cows can sleep standing up using a stay apparatus that locks their legs. They lie down for REM sleep.'},
+  {cat:'🎲 Random',diff:'easy',q:'What is the most popular sport in the world?',opts:['Basketball','Cricket','Tennis','Soccer/Football'],ans:3,fact:'Soccer (football) has an estimated 4 billion fans worldwide, making it by far the most popular sport on the planet.'},
+  {cat:'🎲 Random',diff:'hard',q:'How many bones does a shark have?',opts:['206','100','50','0'],ans:3,fact:'Sharks have no bones — their skeletons are made entirely of cartilage, which is lighter and more flexible than bone.'},
+  {cat:'🎲 Random',diff:'easy',q:'What is the largest mammal in the world?',opts:['Elephant','Blue Whale','Giraffe','Hippopotamus'],ans:1,fact:'The blue whale is not only the largest mammal but the largest animal ever known to exist. They can reach 100 feet and weigh 200 tons.'},
+  {cat:'🎲 Random',diff:'medium',q:'How many legs does a spider have?',opts:['6','8','10','12'],ans:1,fact:'All spiders have 8 legs, distinguishing them from insects which have 6. There are about 45,000 known species of spiders.'},
+  {cat:'🎲 Random',diff:'easy',q:'What do you call a group of lions?',opts:['Pack','Herd','Pride','Flock'],ans:2,fact:'A group of lions is called a pride. A pride typically consists of related females, their cubs, and a small number of adult males.'},
+  {cat:'🎲 Random',diff:'hard',q:'How many eyes does a bee have?',opts:['2','3','4','5'],ans:3,fact:'Bees have 5 eyes: 2 large compound eyes and 3 small simple eyes on top of their head called ocelli.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the only fruit that has seeds on the outside?',opts:['Raspberry','Strawberry','Blackberry','Mulberry'],ans:1,fact:'Strawberries have about 200 seeds on their surface. Technically they are not true berries — bananas and avocados are true berries.'},
+  {cat:'🎲 Random',diff:'easy',q:'What animal is the tallest in the world?',opts:['Elephant','Camel','Ostrich','Giraffe'],ans:3,fact:'Giraffes can grow up to 18 feet tall. Their long necks allow them to eat leaves from trees that other animals cannot reach.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the most venomous animal in the world?',opts:['Box Jellyfish','King Cobra','Black Mamba','Inland Taipan'],ans:0,fact:'The box jellyfish is considered the most venomous animal. Its venom can kill a human in minutes and has no antidote.'},
+  {cat:'🎲 Random',diff:'easy',q:'How many legs does an insect have?',opts:['4','6','8','10'],ans:1,fact:'All insects have exactly 6 legs. This is one of the defining characteristics of insects along with 3 body parts and antennae.'},
+  {cat:'🎲 Random',diff:'hard',q:'What is the only mammal that can fly?',opts:['Flying squirrel','Sugar glider','Bat','Flying lemur'],ans:2,fact:'Bats are the only mammals capable of true sustained flight. There are over 1,400 species of bats, making up 20% of all mammal species.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the national animal of Scotland?',opts:['Red Deer','Golden Eagle','Red Squirrel','Unicorn'],ans:3,fact:'Scotland national animal is the unicorn! It has been part of Scottish heraldry since the 12th century, representing purity and power.'},
+  {cat:'🎲 Random',diff:'easy',q:'What is the fastest bird in the world?',opts:['Eagle','Falcon','Hawk','Albatross'],ans:1,fact:'The Peregrine Falcon is the fastest bird and fastest animal on Earth, diving at speeds over 240 mph to catch prey.'},
+
+  // ── FINAL BATCH: MIXED CATEGORIES ──
+  {cat:'🎵 Music',diff:'easy',q:'What is the best-selling album of all time?',opts:['Back in Black','Thriller','The Dark Side of the Moon','Eagles Greatest Hits'],ans:1,fact:'Thriller by Michael Jackson has sold over 66 million copies worldwide, making it the best-selling album of all time.'},
+  {cat:'🎵 Music',diff:'medium',q:'Which country music star is known as The Man in Black?',opts:['Willie Nelson','Waylon Jennings','Johnny Cash','Hank Williams'],ans:2,fact:'Johnny Cash wore black as a symbol for the poor, hungry, sick, and lonely. He wrote the song Man in Black in 1971.'},
+  {cat:'🎵 Music',diff:'easy',q:'What is the name of Adele most famous ballad?',opts:['Skyfall','Rolling in the Deep','Someone Like You','Hello'],ans:3,fact:'Hello was released in 2015 and broke streaming records, becoming the first song to sell 1 million downloads in a week in the UK.'},
+  {cat:'🎵 Music',diff:'hard',q:'Which classical composer was deaf when he wrote his Ninth Symphony?',opts:['Mozart','Chopin','Bach','Beethoven'],ans:3,fact:'Beethoven was almost completely deaf when he composed his Ninth Symphony in 1824. He never heard it performed.'},
+  {cat:'🎵 Music',diff:'medium',q:'Which band is famous for the album Abbey Road?',opts:['The Rolling Stones','Led Zeppelin','The Beatles','Pink Floyd'],ans:2,fact:'Abbey Road (1969) was the last album The Beatles recorded together. The famous zebra crossing photo is still a tourist attraction.'},
+  {cat:'🎵 Music',diff:'easy',q:'Who is the lead singer of Coldplay?',opts:['Thom Yorke','Bono','Chris Martin','Dave Grohl'],ans:2,fact:'Chris Martin co-founded Coldplay in London in 1996. He is also known for his former relationship with actress Gwyneth Paltrow.'},
+  {cat:'🎵 Music',diff:'medium',q:'What instrument does a DJ primarily use?',opts:['Guitar','Turntable','Keyboard','Drum machine'],ans:1,fact:'DJs use turntables to manipulate vinyl records to create music. Modern DJs also use digital controllers and software.'},
+  {cat:'🎵 Music',diff:'hard',q:'What is the highest note a soprano can typically sing?',opts:['B5','C6','F6','High C'],ans:3,fact:'High C (C6) is the legendary high note for sopranos. Reaching it requires years of training and exceptional vocal control.'},
+  {cat:'🎵 Music',diff:'easy',q:'Which country is K-pop from?',opts:['Japan','China','South Korea','Taiwan'],ans:2,fact:'K-pop (Korean pop) originated in South Korea in the 1990s. Groups like BTS, BLACKPINK, and EXO have global fanbases.'},
+  {cat:'🎵 Music',diff:'medium',q:'Who sang the hit song Uptown Funk?',opts:['Bruno Mars and Mark Ronson','Justin Timberlake','Pharrell Williams','Robin Thicke'],ans:0,fact:'Uptown Funk was released in 2014 and spent 14 weeks at number 1 on the Billboard Hot 100. It won Grammy for Record of the Year.'},
+  {cat:'🍕 Food',diff:'easy',q:'What vegetable is ketchup made from?',opts:['Carrot','Beet','Tomato','Pepper'],ans:2,fact:'Ketchup is made primarily from tomatoes. Interestingly, tomatoes are scientifically a fruit, making ketchup technically a fruit condiment.'},
+  {cat:'🍕 Food',diff:'medium',q:'Which country is sushi originally from?',opts:['China','Japan','Korea','Thailand'],ans:1,fact:'Sushi originated in Japan during the Edo period. The rice was originally used as a preservative and discarded before eating.'},
+  {cat:'🍕 Food',diff:'easy',q:'What is the most consumed grain in the world?',opts:['Wheat','Rice','Corn','Oats'],ans:1,fact:'Rice feeds more than half of the world population. It has been cultivated in China and Southeast Asia for over 7,000 years.'},
+  {cat:'🍕 Food',diff:'hard',q:'What is the most expensive coffee in the world?',opts:['Blue Mountain','Jamaican Gold','Kopi Luwak','Geisha'],ans:2,fact:'Kopi Luwak is made from coffee beans eaten and excreted by Asian palm civets. It sells for up to $600 per pound.'},
+  {cat:'🍕 Food',diff:'medium',q:'What percentage of an avocado is healthy fat?',opts:['5%','10%','15%','20%'],ans:3,fact:'About 77% of the calories in an avocado come from fat, mostly oleic acid — the same monounsaturated fat found in olive oil.'},
+  {cat:'📺 TV',diff:'easy',q:'What show features cooking competitions hosted by Gordon Ramsay?',opts:['Top Chef','MasterChef','Chopped','Iron Chef'],ans:1,fact:'MasterChef launched in the US in 2010 with Gordon Ramsay as lead judge. It has spawned versions in over 60 countries.'},
+  {cat:'📺 TV',diff:'medium',q:'Which show features the Pearson family across multiple timelines?',opts:['Parenthood','Brothers and Sisters','This Is Us','Modern Family'],ans:2,fact:'This Is Us premiered in 2016 and ran 6 seasons. Its tearjerking storylines made it one of the most emotionally impactful shows of the decade.'},
+  {cat:'📺 TV',diff:'easy',q:'What animated show features Stan Smith and his CIA family?',opts:['Family Guy','American Dad','Bob Burgers','Archer'],ans:1,fact:'American Dad premiered in 2005 and was created by Seth MacFarlane who also created Family Guy and The Orville.'},
+  {cat:'📺 TV',diff:'hard',q:'Which TV show has won the most Emmy Awards?',opts:['The Sopranos','Breaking Bad','Game of Thrones','The West Wing'],ans:2,fact:'Game of Thrones holds the record for most Emmy Awards won by a drama series with 59 wins from 163 nominations.'},
+  {cat:'📺 TV',diff:'medium',q:'Which sitcom is set in the fictional town of Pawnee Indiana?',opts:['The Office','Community','Parks and Recreation','30 Rock'],ans:2,fact:'Parks and Recreation ran 7 seasons from 2009-2015. It starred Amy Poehler and launched Chris Pratt to stardom.'},
+  {cat:'💰 Business',diff:'easy',q:'What does CEO stand for?',opts:['Chief Executive Officer','Central Executive Officer','Chief Efficiency Officer','Corporate Executive Officer'],ans:0,fact:'The CEO is the highest-ranking person in a company, responsible for major decisions, operations, and overall direction.'},
+  {cat:'💰 Business',diff:'medium',q:'Which company created the PlayStation gaming console?',opts:['Nintendo','Microsoft','Sony','Sega'],ans:2,fact:'Sony launched the original PlayStation in Japan in 1994. The PS2 is the best-selling game console of all time with 155 million units.'},
+  {cat:'💰 Business',diff:'hard',q:'What year was Apple founded?',opts:['1974','1976','1978','1980'],ans:1,fact:'Apple was founded on April 1, 1976 by Steve Jobs, Steve Wozniak, and Ronald Wayne. Wayne sold his 10% share for $800.'},
+  {cat:'💰 Business',diff:'easy',q:'What does the H in H&M stand for?',opts:['Harry','Henrik','Hennes','Hans'],ans:2,fact:'H&M stands for Hennes and Mauritz. Hennes means hers in Swedish. The store was founded in Sweden in 1947.'},
+  {cat:'💰 Business',diff:'medium',q:'Which company makes the Galaxy smartphone?',opts:['Apple','LG','Sony','Samsung'],ans:3,fact:'Samsung launched the Galaxy S series in 2010. Samsung is South Korea largest company and accounts for about 20% of the nation GDP.'},
+  {cat:'🌐 Tech',diff:'easy',q:'What does Wi-Fi stand for?',opts:['Wireless Fidelity','Wide Frequency','Wireless Fiber','Wire Free'],ans:0,fact:'Wi-Fi stands for Wireless Fidelity. The term was coined in 1999 and chosen because it sounded catchy.'},
+  {cat:'🌐 Tech',diff:'medium',q:'What is the most popular programming language in the world?',opts:['Java','Python','JavaScript','C++'],ans:2,fact:'JavaScript is the most widely used programming language. It runs in every web browser and is essential for web development.'},
+  {cat:'🌐 Tech',diff:'hard',q:'How many bits are in a byte?',opts:['4','8','16','32'],ans:1,fact:'A byte contains 8 bits. A bit is the smallest unit of data (0 or 1). A kilobyte is 1,024 bytes.'},
+  {cat:'🌐 Tech',diff:'easy',q:'What does HTTP stand for?',opts:['HyperText Transfer Protocol','High Traffic Transmission Protocol','Hyper Transfer Text Program','High Text Transfer Protocol'],ans:0,fact:'HTTP (HyperText Transfer Protocol) is the foundation of data communication on the World Wide Web, created by Tim Berners-Lee in 1991.'},
+  {cat:'🌐 Tech',diff:'medium',q:'Which company makes the Pixel smartphone?',opts:['Apple','Samsung','Google','Microsoft'],ans:2,fact:'Google launched the Pixel phone in 2016, combining Google AI features with a pure Android experience and exceptional camera.'},
+  {cat:'🎲 Random',diff:'easy',q:'How many continents are there on Earth?',opts:['5','6','7','8'],ans:2,fact:'There are 7 continents: Africa, Antarctica, Asia, Australia, Europe, North America, and South America.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the most common element in the human body?',opts:['Carbon','Hydrogen','Nitrogen','Oxygen'],ans:3,fact:'Oxygen makes up about 65% of the human body by mass. It is present in water and many organic molecules.'},
+  {cat:'🎲 Random',diff:'easy',q:'How many weeks are in a year?',opts:['48','50','52','54'],ans:2,fact:'A year has exactly 52 weeks and 1 day (or 2 days in a leap year). This is why the same date falls on a different day each year.'},
+  {cat:'🎲 Random',diff:'hard',q:'What is the loudest animal on Earth?',opts:['Blue Whale','Sperm Whale','Pistol Shrimp','Howler Monkey'],ans:1,fact:'The sperm whale produces clicks up to 230 decibels — louder than a jet engine. However the blue whale is the loudest animal by sustained sound.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the only US state that starts with double letters?',opts:['Mississippi','Hawaii','Tennessee','Ohio'],ans:0,fact:'Mississippi starts with two M letters at the beginning when spelling it out. It also contains 4 S, 4 I, and 2 P letters.'},
+  {cat:'🎲 Random',diff:'easy',q:'What is the most popular pet in the US?',opts:['Dogs','Cats','Fish','Birds'],ans:0,fact:'Dogs are the most popular pet in the US with about 90 million pet dogs. Cats are second with about 94 million (but fewer households).'},
+  {cat:'🎲 Random',diff:'medium',q:'How long is a football field in yards?',opts:['80 yards','90 yards','100 yards','110 yards'],ans:2,fact:'An American football field is 100 yards between end zones, with each end zone being 10 yards deep, making the total 120 yards.'},
+  {cat:'🎲 Random',diff:'hard',q:'What is the most spoken language in South America?',opts:['English','Spanish','Portuguese','French'],ans:2,fact:'Portuguese is the most spoken language in South America because Brazil is the largest country. Spanish is spoken by more countries.'},
+  {cat:'🎲 Random',diff:'easy',q:'What shape is a stop sign?',opts:['Circle','Hexagon','Octagon','Pentagon'],ans:2,fact:'Stop signs are octagons (8 sides) internationally. The octagon shape was chosen because it is easy to recognize even from the back.'},
+  {cat:'🎲 Random',diff:'medium',q:'How long does it take Earth to orbit the Sun?',opts:['30 days','90 days','265 days','365 days'],ans:3,fact:'Earth takes 365.25 days to orbit the Sun. The extra 0.25 days is why we add a leap day every 4 years.'},
+  {cat:'🎲 Random',diff:'easy',q:'What is the most common blood type?',opts:['A+','B+','AB+','O+'],ans:3,fact:'O+ is the most common blood type, found in about 37-38% of people. O- is the universal donor (works for all blood types).'},
+  {cat:'🎲 Random',diff:'hard',q:'How many teeth does an adult shark have?',opts:['50','100','200','300'],ans:3,fact:'Sharks can have up to 3,000 teeth at one time arranged in multiple rows. They shed and replace teeth throughout their lives.'},
+
+  // ── FINAL PUSH TO 400 ──
+  {cat:'🎬 Pop Culture',diff:'easy',q:'What is the name of the coffee brand that partnered with Friends?',opts:['Dunkin','Starbucks','Central Perk','Folgers'],ans:1,fact:'Starbucks cups frequently appeared in Friends even though the show featured Central Perk. Starbucks used Friends in promotions.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'Which movie features the DeLorean time machine?',opts:['The Terminator','Back to the Future','Tron','Total Recall'],ans:1,fact:'Back to the Future (1985) used a modified DeLorean DMC-12 as the time machine. The car needs to reach 88 mph to travel in time.'},
+  {cat:'🎬 Pop Culture',diff:'easy',q:'What color is SpongeBob?',opts:['Orange','Pink','Blue','Yellow'],ans:3,fact:'SpongeBob SquarePants is yellow with big blue eyes. He lives in a pineapple under the sea in the fictional city of Bikini Bottom.'},
+  {cat:'🎬 Pop Culture',diff:'hard',q:'Which video game franchise has sold the most copies?',opts:['Call of Duty','Mario','Pokemon','Grand Theft Auto'],ans:1,fact:'The Mario franchise has sold over 800 million copies across all games, making it the best-selling video game franchise of all time.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'What is the name of Harry Potter owl?',opts:['Errol','Pigwidgeon','Crookshanks','Hedwig'],ans:3,fact:'Hedwig is a Snowy Owl that was Harrys 11th birthday present. In the books and movies, Hedwig represents loyalty and companionship.'},
+  {cat:'🎬 Pop Culture',diff:'easy',q:'Which show features a chemistry teacher turned drug lord?',opts:['Ozark','Narcos','Breaking Bad','Dexter'],ans:2,fact:'Breaking Bad star Bryan Cranston won 4 Emmy Awards for his role as Walter White. The show aired on AMC from 2008 to 2013.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'What is the highest rated TV show on IMDb?',opts:['Game of Thrones','The Wire','Breaking Bad','Sopranos'],ans:2,fact:'Breaking Bad holds a 9.5 rating on IMDb, the highest ever for a TV series. Its final season is considered one of the best in TV history.'},
+  {cat:'🎬 Pop Culture',diff:'easy',q:'What language do the characters in the movie Coco speak?',opts:['Portuguese','Italian','French','Spanish'],ans:3,fact:'Coco (2017) is set in Mexico and celebrates the Mexican tradition of Dia de los Muertos. It was Disney-Pixar first film with an all-Latino cast.'},
+  {cat:'🎬 Pop Culture',diff:'hard',q:'What was the first movie ever made?',opts:['The Great Train Robbery','Roundhay Garden Scene','Birth of a Nation','Arrival of a Train'],ans:1,fact:'Roundhay Garden Scene (1888) is considered the oldest surviving film. It is 2 seconds long and was filmed by Louis Le Prince in Leeds, England.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'Which actress has won the most Academy Awards?',opts:['Meryl Streep','Katharine Hepburn','Frances McDormand','Cate Blanchett'],ans:1,fact:'Katharine Hepburn won 4 Academy Awards for Best Actress, the most of any actress. Meryl Streep has the most nominations with 21.'},
+  {cat:'⚽ Sports',diff:'easy',q:'How many players are on a baseball team on the field?',opts:['7','8','9','10'],ans:2,fact:'Baseball teams have 9 players on the field at a time. A baseball game has 9 innings and has been the national pastime since the 1800s.'},
+  {cat:'⚽ Sports',diff:'medium',q:'What country invented the sport of volleyball?',opts:['Brazil','Cuba','USA','Soviet Union'],ans:2,fact:'Volleyball was invented by William Morgan in 1895 in Holyoke, Massachusetts, just one year after basketball was invented.'},
+  {cat:'⚽ Sports',diff:'easy',q:'In which sport do you score a birdie?',opts:['Tennis','Badminton','Golf','Table Tennis'],ans:2,fact:'A birdie in golf means completing a hole in one shot under par. An eagle is 2 under par and an albatross is 3 under par.'},
+  {cat:'⚽ Sports',diff:'hard',q:'What is the fastest recorded speed of a tennis serve?',opts:['155 mph','163 mph','175 mph','180 mph'],ans:1,fact:'Sam Groth set the world record serve speed at 163.7 mph in 2012 in Busan, South Korea.'},
+  {cat:'⚽ Sports',diff:'medium',q:'Which country has won the most Tour de France bicycle races?',opts:['Italy','Belgium','Spain','France'],ans:3,fact:'France has produced the most Tour de France winners. The race started in 1903 and covers about 2,200 miles over 21 stages.'},
+  {cat:'📚 History',diff:'easy',q:'What was the first country to use paper money?',opts:['India','Egypt','Rome','China'],ans:3,fact:'China invented paper money during the Tang Dynasty around 618-907 CE. Europe did not adopt paper currency until the 17th century.'},
+  {cat:'📚 History',diff:'medium',q:'Which ancient wonder was located in Alexandria Egypt?',opts:['Hanging Gardens','Temple of Zeus','Lighthouse of Alexandria','Colossus of Rhodes'],ans:2,fact:'The Lighthouse of Alexandria was built around 280-247 BCE and stood about 330-430 feet tall. It was one of the tallest man-made structures for centuries.'},
+  {cat:'📚 History',diff:'hard',q:'What was the name of the first artificial Earth satellite?',opts:['Explorer 1','Vostok 1','Sputnik 1','Luna 1'],ans:2,fact:'Sputnik 1 was launched by the USSR on October 4, 1957, beginning the Space Race. It transmitted radio signals for 21 days.'},
+  {cat:'📚 History',diff:'easy',q:'Who painted the Sistine Chapel ceiling?',opts:['Leonardo da Vinci','Raphael','Caravaggio','Michelangelo'],ans:3,fact:'Michelangelo painted the Sistine Chapel ceiling from 1508-1512. He reportedly lay on his back on scaffolding for much of the work.'},
+  {cat:'📚 History',diff:'medium',q:'In what city was the Titanic built?',opts:['London','Liverpool','Southampton','Belfast'],ans:3,fact:'The Titanic was built in Belfast, Northern Ireland at the Harland and Wolff shipyard. The Titanic Belfast museum is now a major attraction there.'},
+  {cat:'🧬 Science',diff:'easy',q:'What is the name of the force that keeps planets in orbit?',opts:['Magnetism','Friction','Gravity','Centripetal force'],ans:2,fact:'Gravity keeps planets in orbit around the Sun. Without gravity, planets would fly off into space in a straight line.'},
+  {cat:'🧬 Science',diff:'medium',q:'How many pairs of chromosomes do humans have?',opts:['20','23','26','30'],ans:1,fact:'Humans have 23 pairs of chromosomes for a total of 46. The 23rd pair determines biological sex: XX for female and XY for male.'},
+  {cat:'🧬 Science',diff:'easy',q:'What is the process of water turning into vapor called?',opts:['Condensation','Precipitation','Evaporation','Sublimation'],ans:2,fact:'Evaporation occurs when liquid water turns into water vapor. The water cycle involves evaporation, condensation, and precipitation.'},
+  {cat:'🧬 Science',diff:'hard',q:'What is the name of the first cloned mammal?',opts:['Dolly','Molly','Polly','Holly'],ans:0,fact:'Dolly the sheep was the first mammal to be cloned from an adult cell, born in Scotland in 1996. She lived to age 6.5 years.'},
+  {cat:'🧬 Science',diff:'medium',q:'What is the name of the imaginary line that divides Earth into North and South?',opts:['Prime Meridian','Tropic of Cancer','Equator','Arctic Circle'],ans:2,fact:'The Equator is an imaginary line at 0 degrees latitude. Countries on the Equator experience roughly equal day and night throughout the year.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the currency of the United States?',opts:['Pound','Euro','Dollar','Franc'],ans:2,fact:'The US Dollar has been the world reserve currency since the Bretton Woods Agreement in 1944. It is used in international trade globally.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which city is known as the Big Apple?',opts:['Chicago','Los Angeles','Miami','New York'],ans:3,fact:'New York City has been called the Big Apple since the 1920s. The nickname was popularized by jazz musicians who used it to mean the big time.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the capital of Mexico?',opts:['Guadalajara','Cancun','Monterrey','Mexico City'],ans:3,fact:'Mexico City is one of the largest cities in the world with about 22 million people in the greater metropolitan area.'},
+  {cat:'🌍 Geography',diff:'hard',q:'What percentage of the world population lives in Asia?',opts:['40%','50%','60%','70%'],ans:2,fact:'About 60% of the world population lives in Asia. China and India alone account for about 35% of all humans on Earth.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which US state has the most coastline?',opts:['Florida','California','Hawaii','Alaska'],ans:3,fact:'Alaska has over 33,000 miles of coastline — more than all other US states combined. Its coastline is longer than the continental US east and west coasts.'},
+  {cat:'💰 Business',diff:'easy',q:'What does the S in S&P 500 stand for?',opts:['Standard','Stock','Securities','Shares'],ans:0,fact:'The S&P 500 stands for Standard and Poors 500. It tracks 500 large US companies and is considered the best measure of US stock market health.'},
+  {cat:'💰 Business',diff:'medium',q:'Which company invented the first computer mouse?',opts:['Apple','IBM','Xerox','Microsoft'],ans:2,fact:'Xerox PARC invented the first practical computer mouse in 1973. Apple commercialized it with the Macintosh in 1984.'},
+  {cat:'💰 Business',diff:'hard',q:'What is the most valuable sports team in the world?',opts:['New York Yankees','Manchester United','Real Madrid','Dallas Cowboys'],ans:3,fact:'The Dallas Cowboys are valued at about $9 billion, making them the most valuable sports franchise in the world according to Forbes.'},
+  {cat:'💰 Business',diff:'easy',q:'What does the Nike slogan say?',opts:['Just Go For It','Dream Bigger','Just Do It','Be The Best'],ans:2,fact:'Just Do It was created in 1988 by advertising agency Wieden and Kennedy. It is considered one of the greatest advertising slogans ever.'},
+  {cat:'🎲 Random',diff:'easy',q:'How many minutes are in an hour?',opts:['30','45','60','90'],ans:2,fact:'There are 60 minutes in an hour, a system inherited from the ancient Babylonians who used a base-60 number system.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the hardest natural material on Earth?',opts:['Topaz','Ruby','Diamond','Emerald'],ans:2,fact:'Diamond is the hardest natural substance, rating 10 on the Mohs scale. Only a diamond can scratch another diamond.'},
+  {cat:'🎲 Random',diff:'easy',q:'What is the smallest planet in our solar system?',opts:['Mars','Venus','Pluto','Mercury'],ans:3,fact:'Mercury is the smallest planet in the solar system at about 4,880 km in diameter. Pluto was reclassified as a dwarf planet in 2006.'},
+  {cat:'🎲 Random',diff:'hard',q:'How many muscles are in the human body?',opts:['206','400','600','800'],ans:2,fact:'The human body has about 600 muscles, making up roughly 40% of body weight. The hardest working muscle is the heart.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the collective noun for a group of crows?',opts:['Flock','Murder','Colony','Gaggle'],ans:1,fact:'A group of crows is called a murder. This term dates back to the 15th century and is thought to derive from folklore about crows gathering to judge their peers.'},
+  {cat:'🎲 Random',diff:'easy',q:'How many keys does a standard piano have?',opts:['76','84','88','92'],ans:2,fact:'A standard piano has 88 keys: 52 white and 36 black. The piano was invented around 1700 by Bartolomeo Cristofori in Italy.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the fastest land animal?',opts:['Lion','Pronghorn','Cheetah','Horse'],ans:2,fact:'The cheetah is the fastest land animal, capable of reaching 70 mph in short sprints. It can go from 0 to 60 mph in about 3 seconds.'},
+
+  {cat:'🎵 Music',diff:'easy',q:'What is Rihanna full first name?',opts:['Roberta','Robyn','Robin','Rachel'],ans:1,fact:"Rihanna's full name is Robyn Rihanna Fenty. She was born in Barbados in 1988 and is also the founder of Fenty Beauty."},
+  {cat:'🎵 Music',diff:'medium',q:'Which singer is known as Slay Queen and Mother Monster?',opts:['Beyonce','Nicki Minaj','Lady Gaga','Cardi B'],ans:2,fact:'Lady Gaga earned Mother Monster as a nickname from her fans, the Little Monsters. She has won multiple Grammys and an Oscar.'},
+  {cat:'🍕 Food',diff:'easy',q:'What fast food chain has a red-headed mascot named Wendy?',opts:["Burger King","Arby's","Wendy's","Dairy Queen"],ans:2,fact:"Wendy's was founded in 1969 in Columbus, Ohio by Dave Thomas. Wendy was named after his daughter Melinda Lou Thomas."},
+  {cat:'📺 TV',diff:'medium',q:'What HBO show is set in a theme park with robotic hosts?',opts:['Devs','Altered Carbon','Westworld','Black Mirror'],ans:2,fact:'Westworld premiered in 2016 and was based on the 1973 Michael Crichton film. It explores AI consciousness and free will.'},
+  {cat:'🌐 Tech',diff:'easy',q:'What does the @ symbol mean in an email address?',opts:['And','At','About','Around'],ans:1,fact:'The @ symbol means at and separates the username from the domain in an email address. Ray Tomlinson chose it for the first email in 1971.'},
+  {cat:'🎬 Movies',diff:'easy',q:'What Disney movie features the song Let It Go?',opts:['Tangled','Brave','Frozen','Moana'],ans:2,fact:'Frozen (2013) features the song Let It Go performed by Idina Menzel. The movie won two Academy Awards.'},
+  {cat:'📚 History',diff:'medium',q:'Which explorer first circumnavigated the globe?',opts:['Christopher Columbus','Vasco da Gama','Ferdinand Magellan','Francis Drake'],ans:2,fact:"Ferdinand Magellan led the first circumnavigation of the Earth from 1519-1522, though he died in the Philippines. His crew completed the journey."},
+  {cat:'🧬 Science',diff:'easy',q:'What is the chemical symbol for iron?',opts:['Ir','Io','In','Fe'],ans:3,fact:'Iron chemical symbol Fe comes from Ferrum, the Latin word for iron. Iron is the most used metal in the world.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the capital of Germany?',opts:['Munich','Hamburg','Frankfurt','Berlin'],ans:3,fact:'Berlin has been the capital of Germany since reunification in 1990. It is the largest city in Germany with 3.7 million people.'},
+  {cat:'💰 Business',diff:'medium',q:'Which country is home to the company IKEA?',opts:['Denmark','Norway','Finland','Sweden'],ans:3,fact:'IKEA was founded in Sweden in 1943 by Ingvar Kamprad. The name comes from his initials plus the farm and village he grew up in.'},
+  {cat:'🎲 Random',diff:'easy',q:'What is the most popular game in the world?',opts:['Chess','Checkers','Monopoly','Scrabble'],ans:0,fact:'Chess has been played for over 1,500 years and has an estimated 600 million regular players worldwide, making it the most popular board game ever.'},
+  {cat:'🎵 Music',diff:'hard',q:'Who composed the Four Seasons?',opts:['Bach','Handel','Vivaldi','Mozart'],ans:2,fact:'Antonio Vivaldi composed The Four Seasons in 1723. It is one of the most recognized pieces of classical music.'},
+  {cat:'🍕 Food',diff:'medium',q:'Which country invented french fries?',opts:['France','USA','Belgium','Netherlands'],ans:2,fact:'Despite the name, french fries were invented in Belgium, not France. Belgians have been frying potatoes since the late 1600s.'},
+  {cat:'🎬 Movies',diff:'medium',q:'Which studio produced the Avengers movies?',opts:['DC','Warner Bros','Sony','Marvel Studios'],ans:3,fact:'Marvel Studios produced all the Avengers films under the Marvel Cinematic Universe banner, owned by Disney since 2009.'},
+  {cat:'📚 History',diff:'easy',q:'What is the name of the ancient wonder that was a giant statue?',opts:['Lighthouse of Alexandria','Hanging Gardens','Colossus of Rhodes','Temple of Artemis'],ans:2,fact:'The Colossus of Rhodes was a giant bronze statue about 30 meters tall, built around 280 BCE. It collapsed in an earthquake about 54 years later.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which is the only country with no rivers?',opts:['Maldives','Monaco','Vatican City','Saudi Arabia'],ans:3,fact:'Saudi Arabia has no permanent rivers. All water comes from aquifers, desalination plants, and wadis that only flow after rain.'},
+  {cat:'🌐 Tech',diff:'medium',q:'What year was Google founded?',opts:['1995','1996','1997','1998'],ans:3,fact:'Google was founded by Larry Page and Sergey Brin on September 4, 1998 in a garage in Menlo Park, California.'},
+  {cat:'🎲 Random',diff:'medium',q:'What is the world second most spoken language?',opts:['English','Spanish','Hindi','Mandarin'],ans:1,fact:'Spanish is spoken by about 485 million native speakers and is official in 20 countries. It is the second most spoken language by native speakers.'},
+  {cat:'💰 Business',diff:'easy',q:'Which company makes the Xbox game console?',opts:['Sony','Nintendo','Microsoft','Sega'],ans:2,fact:'Microsoft launched the Xbox in 2001 to compete with PlayStation. The Xbox Series X and S are the current generation consoles.'},
+  {cat:'⚽ Sports',diff:'easy',q:'What is the Olympic motto?',opts:['Faster Higher Stronger','Play to Win','Spirit of the Games','One World One Dream'],ans:0,fact:'The Olympic motto Citius Altius Fortius means Faster Higher Stronger in Latin. In 2021 Togetherness was added making it Faster Higher Stronger Together.'},
+  {cat:'📺 TV',diff:'easy',q:'Which show features the quote Winter is Coming?',opts:['Vikings','The Last Kingdom','Game of Thrones','Outlander'],ans:2,fact:'Winter is Coming is the motto of House Stark in Game of Thrones. It serves as a warning that hard times are ahead.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'What is the name of the wizarding sport played on broomsticks in Harry Potter?',opts:['Quaffle','Bludger','Quidditch','Seeker'],ans:2,fact:'Quidditch is played on broomsticks and involves four balls. The game ends when the Seeker catches the Golden Snitch worth 150 points.'},
 ];
 
 // ═══════════════════════════════════════════════
@@ -626,11 +980,11 @@ function loadSavedProfile() {
       state.isReturn = true;
       const playBtn  = document.querySelector('#splash .btn-primary');
       const returnBtn = document.querySelector('#splash .btn-secondary');
-      if (playBtn)   { playBtn.textContent = '🔁 Play Again — $2'; playBtn.onclick = () => goToProfile(true); }
-      if (returnBtn) { returnBtn.textContent = '👋 New player? First game — $5'; returnBtn.onclick = () => goToProfile(false); }
+      if (playBtn)   { playBtn.textContent = '🚀 Play Now — $2'; playBtn.onclick = () => goToProfile(false); }
+      
       // Update pricing pill text
       const pill = document.querySelector('#splash .pricing-pill');
-      if (pill) pill.innerHTML = '<span class="dot">●</span> Welcome back! Your next game is <strong>&nbsp;$2</strong>';
+      
     }
   } else {
     state.playerId = generatePlayerId();
@@ -808,7 +1162,7 @@ function initStripe() {
       currency: 'usd',
       total: {
         label: 'Random Trivia Rocks',
-        amount: state.isReturn ? 200 : 500,
+        amount: 200,
       },
       requestPayerName: true,
       requestPayerEmail: false,
@@ -826,19 +1180,19 @@ function initStripe() {
       },
     });
 
-    // Check if Apple Pay / Google Pay is available on this device
+    // Check if Apple Pay is available on this device
     paymentRequest.canMakePayment().then(result => {
-      const applePayBox = document.getElementById('apple-pay-button-container');
-      const applePayOption = document.getElementById('pm-apple');
-      if (result && result.applePay) {
-        // Apple Pay is available — show the real button
+      const applePayBox     = document.getElementById('apple-pay-button-container');
+      const applePayUnavail = document.getElementById('apple-pay-unavailable');
+      if (result && (result.applePay || result.googlePay)) {
+        // Apple Pay / Google Pay available — mount the button
         prButton.mount('#apple-pay-button-container');
         applePayBox.style.display = 'block';
-        applePayOption.style.display = 'flex';
+        if (applePayUnavail) applePayUnavail.style.display = 'none';
       } else {
-        // Apple Pay not available — hide the option
-        applePayOption.style.display = 'none';
-        applePayBox.style.display = 'none';
+        // Not available — show friendly message
+        if (applePayBox) applePayBox.style.display = 'none';
+        if (applePayUnavail) applePayUnavail.style.display = 'block';
       }
     });
 
@@ -850,7 +1204,7 @@ function initStripe() {
           body: JSON.stringify({
             playerId: state.playerId,
             playerName: state.username,
-            isReturn: state.isReturn,
+            isReturn: true,
           }),
         });
 
@@ -887,13 +1241,13 @@ function initStripe() {
   } catch(e) { console.warn('Stripe init failed:', e); }
 }
 
-// Update Apple Pay amount when switching between $2 and $5
+// Apple Pay amount — always $2
 function updatePaymentRequestAmount() {
   if (!paymentRequest) return;
   paymentRequest.update({
     total: {
       label: 'Random Trivia Rocks',
-      amount: state.isReturn ? 200 : 500,
+      amount: 200,
     },
   });
 }
@@ -926,10 +1280,10 @@ function goToPayment() {
   if (!name) { showToast('Please enter a display name!'); return; }
   state.username = name;
   saveProfile();
-  const price = state.isReturn ? '$2' : '$5';
+  const price = '$2';
   document.getElementById('pay-amount').textContent = price;
-  document.getElementById('pay-btn-amount').textContent = price;
-  document.getElementById('pay-label').textContent = state.isReturn ? 'Return Player' : 'First Game';
+  document.getElementById('pay-btn-amount').textContent = '$2';
+  document.getElementById('pay-label').textContent = 'Play — $2';
   updatePaymentRequestAmount();
   showScreen('payment');
 }
@@ -962,7 +1316,7 @@ async function processPayment() {
     await new Promise(r => setTimeout(r, 1500));
     btn.innerHTML = '✅ Payment Confirmed!';
     await new Promise(r => setTimeout(r, 700));
-    btn.innerHTML = `Pay ${state.isReturn?'$2':'$5'} & Play Now →`;
+    btn.innerHTML = 'Pay $2 & Play Now →';
     btn.disabled = false;
     startGame();
     return;
@@ -984,18 +1338,18 @@ async function processPayment() {
 
     if (error) {
       document.getElementById('stripe-errors').textContent = error.message;
-      btn.innerHTML = `Pay ${state.isReturn?'$2':'$5'} & Play Now →`;
+      btn.innerHTML = 'Pay $2 & Play Now →';
       btn.disabled = false;
     } else if (paymentIntent.status === 'succeeded') {
       btn.innerHTML = '✅ Payment Confirmed!';
       await new Promise(r => setTimeout(r, 700));
-      btn.innerHTML = `Pay ${state.isReturn?'$2':'$5'} & Play Now →`;
+      btn.innerHTML = 'Pay $2 & Play Now →';
       btn.disabled = false;
       startGame();
     }
   } catch(err) {
     document.getElementById('stripe-errors').textContent = err.message || 'Payment failed. Please try again.';
-    btn.innerHTML = `Pay ${state.isReturn?'$2':'$5'} & Play Now →`;
+    btn.innerHTML = 'Pay $2 & Play Now →';
     btn.disabled = false;
   }
 }
