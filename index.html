@@ -372,9 +372,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <h3>Pay With</h3>
       <div class="pay-methods">
         <div class="pay-method selected" onclick="selectPay(this,'stripe')"><span class="pm-icon">💳</span>Card</div>
-        <div class="pay-method" onclick="selectPay(this,'apple')"><span class="pm-icon"></span>Apple Pay</div>
+        <div class="pay-method" onclick="selectPay(this,'apple')" id="pm-apple"><span class="pm-icon"></span>Apple Pay</div>
         <div class="pay-method" onclick="selectPay(this,'venmo')"><span class="pm-icon">💙</span>Venmo</div>
         <div class="pay-method" onclick="selectPay(this,'paypal')"><span class="pm-icon">🅿️</span>PayPal</div>
+      </div>
+
+      <!-- Apple Pay real button — shows automatically on Safari/iPhone -->
+      <div id="apple-pay-button-container" style="display:none;margin-bottom:1rem;">
+        <div id="payment-request-button"></div>
+        <div style="font-size:0.75rem;color:rgba(245,242,235,0.4);text-align:center;margin-top:0.5rem;">
+          Tap the button above to pay with Apple Pay
+        </div>
       </div>
       <div id="stripe-section">
         <div class="form-group">
@@ -506,10 +514,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 // ═══════════════════════════════════════════════
 const CONFIG = {
   // Your Stripe publishable key (from stripe.com → Dashboard → API Keys)
-  stripeKey: 'pk_live_51TCKzWRJ0l4edNC9tUjbnuob4y8bSOYIPbmDXHv4vXtpxomPlWOWftufEYgdRuHKG1AtKFJA4YtvBDsA320C4GJJ00QN3wKjLV',
+  stripeKey: 'pk_live_YOUR_STRIPE_PUBLISHABLE_KEY',
 
   // Your deployed backend URL (from Railway / Render / Heroku)
-  apiUrl: 'https://triv-production.up.railway.app',
+  apiUrl: 'https://your-backend.up.railway.app',
 
   // Demo mode: false = skip real payments (for testing)
   // Set to false when going live!
@@ -764,12 +772,16 @@ async function fetchPlayerRank() {
 }
 
 // ═══════════════════════════════════════════════
-//  STRIPE
+//  STRIPE + APPLE PAY
 // ═══════════════════════════════════════════════
+let paymentRequest, prButton;
+
 function initStripe() {
   if (CONFIG.demoMode) return;
   try {
     stripe = Stripe(CONFIG.stripeKey);
+
+    // ── Regular card element ──
     const elements = stripe.elements({
       appearance: { theme:'night', variables:{ colorPrimary:'#FFE135', colorBackground:'#1a1a1a', colorText:'#f5f2eb', borderRadius:'12px' } }
     });
@@ -778,7 +790,101 @@ function initStripe() {
     cardElement.on('change', e => {
       document.getElementById('stripe-errors').textContent = e.error ? e.error.message : '';
     });
+
+    // ── Apple Pay / Google Pay Payment Request Button ──
+    paymentRequest = stripe.paymentRequest({
+      country: 'US',
+      currency: 'usd',
+      total: {
+        label: 'Random Trivia Rocks',
+        amount: state.isReturn ? 200 : 500,
+      },
+      requestPayerName: true,
+      requestPayerEmail: false,
+    });
+
+    const prElements = stripe.elements();
+    prButton = prElements.create('paymentRequestButton', {
+      paymentRequest,
+      style: {
+        paymentRequestButton: {
+          type: 'buy',
+          theme: 'dark',
+          height: '54px',
+        },
+      },
+    });
+
+    // Check if Apple Pay / Google Pay is available on this device
+    paymentRequest.canMakePayment().then(result => {
+      const applePayBox = document.getElementById('apple-pay-button-container');
+      const applePayOption = document.getElementById('pm-apple');
+      if (result && result.applePay) {
+        // Apple Pay is available — show the real button
+        prButton.mount('#apple-pay-button-container');
+        applePayBox.style.display = 'block';
+        applePayOption.style.display = 'flex';
+      } else {
+        // Apple Pay not available — hide the option
+        applePayOption.style.display = 'none';
+        applePayBox.style.display = 'none';
+      }
+    });
+
+    // Handle Apple Pay payment confirmation
+    paymentRequest.on('paymentmethod', async (ev) => {
+      try {
+        const { clientSecret } = await apiFetch('/api/create-payment-intent', {
+          method: 'POST',
+          body: JSON.stringify({
+            playerId: state.playerId,
+            playerName: state.username,
+            isReturn: state.isReturn,
+          }),
+        });
+
+        const { error, paymentIntent } = await stripe.confirmCardPayment(
+          clientSecret,
+          { payment_method: ev.paymentMethod.id },
+          { handleActions: false }
+        );
+
+        if (error) {
+          ev.complete('fail');
+          showToast('Payment failed. Please try again.');
+        } else {
+          ev.complete('success');
+          if (paymentIntent.status === 'requires_action') {
+            const { error: actionError } = await stripe.confirmCardPayment(clientSecret);
+            if (actionError) {
+              showToast('Payment failed. Please try again.');
+            } else {
+              showToast('✅ Apple Pay confirmed!');
+              setTimeout(() => startGame(), 500);
+            }
+          } else {
+            showToast('✅ Apple Pay confirmed!');
+            setTimeout(() => startGame(), 500);
+          }
+        }
+      } catch(err) {
+        ev.complete('fail');
+        showToast('Payment failed. Please try again.');
+      }
+    });
+
   } catch(e) { console.warn('Stripe init failed:', e); }
+}
+
+// Update Apple Pay amount when switching between $2 and $5
+function updatePaymentRequestAmount() {
+  if (!paymentRequest) return;
+  paymentRequest.update({
+    total: {
+      label: 'Random Trivia Rocks',
+      amount: state.isReturn ? 200 : 500,
+    },
+  });
 }
 
 // ═══════════════════════════════════════════════
@@ -813,6 +919,7 @@ function goToPayment() {
   document.getElementById('pay-amount').textContent = price;
   document.getElementById('pay-btn-amount').textContent = price;
   document.getElementById('pay-label').textContent = state.isReturn ? 'Return Player' : 'First Game';
+  updatePaymentRequestAmount();
   showScreen('payment');
 }
 
