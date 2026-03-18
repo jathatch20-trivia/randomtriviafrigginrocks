@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Random Trivia Rocks — Are You Smarter Than Your Friends?</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+:root {
+  --black:#0a0a0a; --white:#f5f2eb; --yellow:#FFE135;
+  --orange:#FF5C00; --pink:#FF2D78; --blue:#00C2FF;
+  --green:#00E87A; --red:#FF3B3B; --card:#141414;
+  --border:rgba(255,255,255,0.08);
+
+  /* Splash palette — soft & chill */
+  --sp-bg:       #1a1228;
+  --sp-lavender: #C9B8F0;
+  --sp-mint:     #A8E6CF;
+  --sp-blush:    #F4B8C8;
+  --sp-peach:    #FFD4B8;
+  --sp-text:     #EDE8F8;
+  --sp-muted:    rgba(237,232,248,0.55);
+  --sp-card:     rgba(255,255,255,0.07);
+  --sp-border:   rgba(201,184,240,0.2);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:0.5;}
+
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ══ SPLASH — soft lavender/mint/blush theme ══ */
+#splash{align-items:center;justify-content:center;position:relative;overflow:hidden;background:var(--sp-bg);}
+
+/* layered soft gradient blobs */
+.splash-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 70% 55% at 15% 10%,  rgba(201,184,240,0.30) 0%,transparent 65%),
+    radial-gradient(ellipse 55% 50% at 90% 25%,  rgba(168,230,207,0.22) 0%,transparent 65%),
+    radial-gradient(ellipse 60% 45% at 50% 95%,  rgba(244,184,200,0.25) 0%,transparent 65%),
+    radial-gradient(ellipse 40% 40% at 80% 80%,  rgba(255,212,184,0.18) 0%,transparent 60%);
+}
+/* subtle dot grid */
+.splash-grid{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(201,184,240,0.18) 1px,transparent 1px);background-size:28px 28px;}
+
+.splash-content{position:relative;text-align:center;padding:2rem 2rem 2.5rem;max-width:480px;width:100%;}
+
+/* Live badge */
+.logo-badge{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  background:rgba(201,184,240,0.15);
+  color:var(--sp-lavender);
+  border:1px solid rgba(201,184,240,0.35);
+  font-family:'Space Mono',monospace;font-size:0.65rem;font-weight:700;letter-spacing:0.12em;
+  padding:0.4rem 1rem;border-radius:100px;margin-bottom:1.8rem;
+  animation:badge-pop 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes badge-pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* BIG custom title */
+.splash-main-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(3.2rem,13vw,5.8rem);
+  line-height:0.95;
+  letter-spacing:0.01em;
+  color:var(--sp-text);
+  animation:slide-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s both;
+  text-shadow:0 4px 40px rgba(201,184,240,0.35);
+}
+.splash-main-title .highlight{
+  background:linear-gradient(135deg,var(--sp-lavender),var(--sp-mint));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+@keyframes slide-up{from{transform:translateY(35px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.tagline{
+  font-size:1.05rem;color:var(--sp-muted);
+  margin:1.1rem 0 1.8rem;
+  animation:slide-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.3s both;
+}
+
+/* Pricing pill */
+.pricing-pill{
+  display:flex;align-items:center;justify-content:center;gap:0.5rem;
+  background:rgba(201,184,240,0.1);
+  border:1px solid rgba(201,184,240,0.25);
+  border-radius:100px;padding:0.7rem 1.5rem;font-size:0.85rem;
+  color:var(--sp-text);
+  margin-bottom:0.9rem;
+  animation:slide-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.42s both;
+}
+.pricing-pill .dot{color:var(--sp-mint);}
+
+/* Ads line */
+.ads-line{
+  font-size:0.82rem;
+  color:var(--sp-muted);
+  margin-bottom:1.4rem;
+  animation:slide-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.48s both;
+  display:flex;align-items:center;justify-content:center;gap:0.4rem;
+}
+
+/* Buttons — splash override */
+#splash .btn-primary{
+  background:linear-gradient(135deg,var(--sp-lavender),var(--sp-mint));
+  color:#1a1228;font-weight:800;
+  box-shadow:0 8px 32px rgba(168,230,207,0.25);
+  animation:slide-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.55s both;
+}
+#splash .btn-primary:hover{box-shadow:0 14px 42px rgba(201,184,240,0.45);transform:translateY(-2px);}
+#splash .btn-secondary{
+  color:var(--sp-lavender);
+  border-color:rgba(201,184,240,0.3);
+  animation:slide-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.65s both;
+}
+#splash .btn-secondary:hover{background:rgba(201,184,240,0.08);border-color:rgba(201,184,240,0.5);}
+
+/* Stats */
+.stats-row{display:flex;gap:1.5rem;justify-content:center;margin-top:2rem;animation:slide-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.75s both;}
+.stat{text-align:center;}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--sp-lavender);line-height:1;}
+.stat-label{font-size:0.7rem;color:var(--sp-muted);letter-spacing:0.1em;text-transform:uppercase;}
+
+/* Leaderboard preview card */
+.splash-lb-preview{
+  margin-top:1.5rem;
+  background:var(--sp-card);
+  border:1px solid var(--sp-border);
+  border-radius:18px;padding:1rem;
+  animation:slide-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.85s both;
+}
+.splash-lb-title{font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--sp-muted);margin-bottom:0.75rem;}
+.splash-lb-row{display:flex;align-items:center;gap:0.6rem;padding:0.4rem 0;font-size:0.85rem;color:var(--sp-text);}
+.splash-lb-score{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--sp-mint);margin-left:auto;}
+
+/* BrainBurst small branding at bottom */
+.splash-branding{
+  margin-top:1.8rem;
+  font-family:'Space Mono',monospace;
+  font-size:0.65rem;
+  color:rgba(201,184,240,0.3);
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  animation:slide-up 0.7s cubic-bezier(0.22,1,0.36,1) 0.95s both;
+}
+.splash-branding span{color:rgba(201,184,240,0.5);}
+
+/* live dot — mint for splash */
+.lb-live-dot{width:7px;height:7px;border-radius:50%;background:var(--sp-mint);animation:live-pulse 1.5s ease infinite;display:inline-block;margin-right:0.4rem;}
+@keyframes live-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+
+/* ── GLOBAL BUTTONS (non-splash screens) ── */
+.btn-primary{display:block;width:100%;background:var(--yellow);color:var(--black);border:none;border-radius:16px;padding:1.1rem 2rem;font-family:'DM Sans',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,225,53,0.4);}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.btn-secondary{display:block;width:100%;background:transparent;color:var(--white);border:1px solid var(--border);border-radius:16px;padding:1rem 2rem;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;margin-top:0.75rem;transition:border-color 0.2s,background 0.2s;}
+.btn-secondary:hover{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.05);}
+
+/* PROFILE */
+.inner-screen{padding:2rem;max-width:480px;margin:0 auto;width:100%;display:flex;flex-direction:column;}
+.screen-header{display:flex;align-items:center;gap:1rem;margin-bottom:2rem;}
+.back-btn{background:var(--card);border:1px solid var(--border);color:var(--white);width:40px;height:40px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;transition:background 0.2s;flex-shrink:0;}
+.back-btn:hover{background:rgba(255,255,255,0.1);}
+.screen-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.02em;}
+.section-label{font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,242,235,0.35);margin-bottom:0.75rem;}
+.profile-avatar-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;margin-bottom:1.5rem;}
+.avatar-opt{font-size:1.6rem;height:48px;border-radius:12px;border:2px solid transparent;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;}
+.avatar-opt:hover{border-color:rgba(255,255,255,0.3);}
+.avatar-opt.selected{border-color:var(--yellow);background:rgba(255,225,53,0.1);}
+.form-group{margin-bottom:1rem;}
+.form-group label{display:block;font-size:0.8rem;color:rgba(245,242,235,0.5);margin-bottom:0.4rem;letter-spacing:0.05em;}
+.form-group input{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:12px;padding:0.85rem 1rem;color:var(--white);font-family:'DM Sans',sans-serif;font-size:1rem;transition:border-color 0.2s;outline:none;}
+.form-group input::placeholder{color:rgba(245,242,235,0.25);}
+.form-group input:focus{border-color:var(--yellow);}
+.profile-preview{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1rem;display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;}
+.profile-ava{font-size:2rem;width:50px;height:50px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);border-radius:50%;flex-shrink:0;}
+.profile-name{font-weight:700;font-size:1rem;}
+.profile-meta{font-size:0.75rem;color:rgba(245,242,235,0.45);margin-top:0.2rem;}
+.profile-badge-tag{font-family:'Space Mono',monospace;font-size:0.65rem;background:rgba(255,225,53,0.1);color:var(--yellow);border:1px solid rgba(255,225,53,0.2);padding:0.3rem 0.75rem;border-radius:100px;}
+
+/* PAYMENT */
+.pay-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:1.5rem;margin-bottom:1.5rem;}
+.pay-card h3{font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,242,235,0.4);margin-bottom:1rem;}
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.2rem;}
+.pay-method{background:rgba(255,255,255,0.04);border:2px solid transparent;border-radius:14px;padding:0.9rem;text-align:center;cursor:pointer;transition:all 0.2s;font-size:0.85rem;font-weight:600;}
+.pay-method .pm-icon{font-size:1.5rem;display:block;margin-bottom:0.3rem;}
+.pay-method:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);}
+.pay-method.selected{border-color:var(--yellow);background:rgba(255,225,53,0.08);}
+#stripe-card-element{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:12px;padding:0.9rem 1rem;transition:border-color 0.2s;}
+#stripe-errors{color:var(--red);font-size:0.8rem;margin-top:0.5rem;min-height:1.2rem;}
+.price-summary{display:flex;justify-content:space-between;align-items:center;padding:1rem 0 0;border-top:1px solid var(--border);margin-top:1rem;}
+.price-summary .amount{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--yellow);}
+.secure-note{display:flex;align-items:center;justify-content:center;gap:0.5rem;font-size:0.75rem;color:rgba(245,242,235,0.35);margin-bottom:1rem;}
+.stripe-badge{font-size:0.65rem;background:rgba(99,91,255,0.15);color:#7B73FF;border:1px solid rgba(99,91,255,0.25);padding:0.2rem 0.6rem;border-radius:100px;}
+.alt-pay-box{padding:1.5rem 0;text-align:center;color:rgba(245,242,235,0.5);font-size:0.9rem;}
+.alt-pay-icon{font-size:2rem;display:block;margin-bottom:0.5rem;}
+
+/* GAME */
+#game{padding:0;max-width:480px;margin:0 auto;width:100%;}
+.game-top{padding:1.2rem 1.5rem 0;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;}
+.q-counter{font-family:'Space Mono',monospace;font-size:0.8rem;color:rgba(245,242,235,0.4);}
+.q-counter span{color:var(--white);font-weight:700;}
+.score-live{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--yellow);}
+.streak-badge{font-family:'Space Mono',monospace;font-size:0.72rem;background:rgba(255,92,0,0.12);color:var(--orange);border:1px solid rgba(255,92,0,0.25);border-radius:100px;padding:0.3rem 0.75rem;transition:all 0.3s;}
+.streak-badge.hot{background:rgba(255,92,0,0.3);color:var(--yellow);border-color:var(--orange);}
+.timer-container{padding:1rem 1.5rem 0;}
+.timer-bar-track{height:6px;background:rgba(255,255,255,0.08);border-radius:100px;overflow:hidden;}
+.timer-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--green),var(--yellow));transition:width 0.1s linear,background 0.5s;width:100%;}
+.timer-bar-fill.urgent{background:linear-gradient(90deg,var(--red),var(--pink));}
+.timer-display{font-family:'Space Mono',monospace;font-size:0.72rem;color:rgba(245,242,235,0.4);text-align:right;margin-top:0.3rem;}
+.cat-tag{display:inline-flex;align-items:center;gap:0.4rem;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:100px;padding:0.35rem 0.9rem;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:rgba(245,242,235,0.5);}
+.diff-tag{font-family:'Space Mono',monospace;font-size:0.6rem;padding:0.2rem 0.5rem;border-radius:100px;}
+.diff-easy{background:rgba(0,232,122,0.15);color:var(--green);}
+.diff-medium{background:rgba(255,225,53,0.15);color:var(--yellow);}
+.diff-hard{background:rgba(255,59,59,0.15);color:var(--red);}
+.question-area{padding:1.2rem 1.5rem;}
+.question-text{font-family:'DM Sans',sans-serif;font-size:clamp(1.1rem,4.5vw,1.45rem);font-weight:700;line-height:1.35;min-height:5rem;}
+.options-grid{padding:0 1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;}
+.option-btn{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:1rem;color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;text-align:left;line-height:1.3;transition:all 0.18s;}
+.option-btn .opt-letter{display:block;font-family:'Space Mono',monospace;font-size:0.6rem;color:rgba(245,242,235,0.3);margin-bottom:0.35rem;}
+.option-btn:hover:not(:disabled){border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.07);transform:translateY(-2px);}
+.option-btn.correct{border-color:var(--green);background:rgba(0,232,122,0.15);color:var(--green);}
+.option-btn.wrong{border-color:var(--red);background:rgba(255,59,59,0.1);color:var(--red);}
+.option-btn.reveal{border-color:rgba(0,232,122,0.3);background:rgba(0,232,122,0.04);}
+.option-btn:disabled{cursor:not-allowed;}
+.fact-box{margin:1rem 1.5rem 0;background:rgba(0,194,255,0.08);border:1px solid rgba(0,194,255,0.2);border-radius:16px;padding:1rem 1.2rem;font-size:0.85rem;color:var(--blue);display:none;animation:fade-in 0.3s ease both;}
+.fact-box.show{display:block;}
+.fact-box strong{display:block;margin-bottom:0.3rem;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;opacity:0.7;}
+@keyframes fade-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.next-btn{margin:1rem 1.5rem 2rem;display:none;width:calc(100% - 3rem);background:var(--yellow);color:var(--black);border:none;border-radius:16px;padding:1rem;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;}
+.next-btn.show{display:block;animation:fade-in 0.3s ease both;}
+.next-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,225,53,0.35);}
+
+/* RESULTS */
+#results{padding:2rem 1.5rem 3rem;max-width:480px;margin:0 auto;width:100%;align-items:center;}
+.result-header{text-align:center;margin-bottom:1.5rem;width:100%;}
+.result-emoji{font-size:4rem;margin-bottom:0.75rem;display:block;animation:bounce-in 0.6s cubic-bezier(0.34,1.56,0.64,1) both;}
+@keyframes bounce-in{from{transform:scale(0)}to{transform:scale(1)}}
+.result-title{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;line-height:1;margin-bottom:0.4rem;}
+.result-sub{color:rgba(245,242,235,0.5);font-size:0.9rem;}
+.score-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:1.5rem;width:100%;margin-bottom:1.2rem;position:relative;overflow:hidden;}
+.score-card::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;background:radial-gradient(circle,rgba(255,225,53,0.1) 0%,transparent 70%);pointer-events:none;}
+.score-main{text-align:center;margin-bottom:1.2rem;padding-bottom:1.2rem;border-bottom:1px solid var(--border);}
+.score-num{font-family:'Bebas Neue',sans-serif;font-size:4.5rem;color:var(--yellow);line-height:1;}
+.score-max{font-size:0.9rem;color:rgba(245,242,235,0.4);}
+.score-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;text-align:center;}
+.score-stat-num{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;line-height:1;}
+.score-stat-label{font-size:0.68rem;color:rgba(245,242,235,0.4);letter-spacing:0.08em;text-transform:uppercase;margin-top:0.2rem;}
+.lb-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:1.5rem;width:100%;margin-bottom:1.2rem;}
+.lb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.lb-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;}
+.lb-tabs{display:flex;gap:0.3rem;}
+.lb-tab{font-family:'Space Mono',monospace;font-size:0.65rem;padding:0.3rem 0.7rem;border-radius:100px;border:1px solid var(--border);background:transparent;color:rgba(245,242,235,0.4);cursor:pointer;transition:all 0.2s;}
+.lb-tab.active{background:var(--yellow);color:var(--black);border-color:var(--yellow);}
+.lb-row{display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0;border-bottom:1px solid var(--border);}
+.lb-row:last-child{border-bottom:none;}
+.lb-rank{font-family:'Space Mono',monospace;font-size:0.72rem;color:rgba(245,242,235,0.3);width:1.5rem;text-align:center;flex-shrink:0;}
+.lb-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;background:rgba(255,255,255,0.06);}
+.lb-name{flex:1;font-weight:600;font-size:0.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lb-score{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--yellow);flex-shrink:0;}
+.lb-row.you{background:rgba(255,225,53,0.06);border-radius:12px;padding:0.6rem 0.75rem;margin:0.15rem -0.75rem;border:1px solid rgba(255,225,53,0.15);}
+.lb-loading{text-align:center;padding:1.5rem;color:rgba(245,242,235,0.3);font-size:0.85rem;}
+.lb-empty{text-align:center;padding:1.5rem;color:rgba(245,242,235,0.3);font-size:0.85rem;}
+.profile-strip{display:flex;align-items:center;gap:1rem;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1rem 1.2rem;width:100%;margin-bottom:1.2rem;}
+.challenge-link{background:rgba(255,255,255,0.04);border:1px dashed rgba(255,225,53,0.3);border-radius:14px;padding:0.9rem 1rem;display:flex;align-items:center;gap:0.75rem;margin-bottom:1.2rem;cursor:pointer;transition:background 0.2s;width:100%;}
+.challenge-link:hover{background:rgba(255,225,53,0.06);}
+.challenge-url{font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--yellow);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.share-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.6rem;margin-bottom:1.2rem;width:100%;}
+.share-btn{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.8rem 0.4rem;cursor:pointer;text-align:center;transition:all 0.2s;color:var(--white);font-size:0.68rem;font-weight:600;}
+.share-btn .share-icon{font-size:1.4rem;display:block;margin-bottom:0.35rem;}
+.share-btn:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.3);}
+.play-again-btn{width:100%;background:var(--yellow);color:var(--black);border:none;border-radius:16px;padding:1.1rem;font-family:'DM Sans',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;margin-bottom:0.75rem;}
+.play-again-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,225,53,0.4);}
+.rank-callout{background:rgba(255,92,0,0.1);border:1px solid rgba(255,92,0,0.25);border-radius:14px;padding:0.9rem 1.2rem;display:flex;align-items:center;gap:0.75rem;width:100%;margin-bottom:1.2rem;}
+.rank-callout-icon{font-size:1.5rem;flex-shrink:0;}
+.rank-callout-text{font-size:0.9rem;font-weight:600;}
+.rank-callout-sub{font-size:0.75rem;color:rgba(245,242,235,0.5);margin-top:0.2rem;}
+
+/* UTILS */
+.correct-flash{animation:correct-flash 0.5s ease;}
+@keyframes correct-flash{0%,100%{background:var(--black)}50%{background:rgba(0,232,122,0.05)}}
+.wrong-flash{animation:wrong-flash 0.5s ease;}
+@keyframes wrong-flash{0%,100%{background:var(--black)}50%{background:rgba(255,59,59,0.05)}}
+.pts-popup{position:fixed;font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--green);pointer-events:none;z-index:1000;animation:pts-float 1s ease forwards;}
+@keyframes pts-float{from{transform:translateY(0);opacity:1}to{transform:translateY(-80px);opacity:0}}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:#1e1e1e;border:1px solid var(--border);border-radius:100px;padding:0.7rem 1.5rem;font-size:0.88rem;font-weight:600;z-index:10000;transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap;max-width:90vw;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,0.3);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:0.4rem;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- ══ SPLASH ══ -->
+<div class="screen active" id="splash">
+  <div class="splash-bg"></div>
+  <div class="splash-grid"></div>
+  <div class="splash-content">
+
+    <div class="logo-badge"><span class="lb-live-dot"></span> Live Now — 10K+ Players Today</div>
+
+    <div class="splash-main-title">
+      Random<br><span class="highlight">Trivia Rocks</span>
+    </div>
+
+    <div class="tagline">10 questions. 60 seconds. Destroy your friends. 🎉</div>
+
+    <div class="pricing-pill">
+      <span class="dot">●</span>
+      First game <strong>&nbsp;$5&nbsp;</strong>·&nbsp; Return players <strong>&nbsp;$2</strong>
+    </div>
+
+    <div class="ads-line">🚫 Ads are for the birds — we keep it clean so you can focus on winning.</div>
+
+    <button class="btn-primary" onclick="goToProfile(false)">🚀 Play Now — $5</button>
+    <button class="btn-secondary" onclick="goToProfile(true)">Already played? Sign in — $2</button>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-num">84K</div><div class="stat-label">Players</div></div>
+      <div class="stat"><div class="stat-num">4.9★</div><div class="stat-label">Rated</div></div>
+      <div class="stat"><div class="stat-num">2.1M</div><div class="stat-label">Shares</div></div>
+    </div>
+
+    <div class="splash-lb-preview">
+      <div class="splash-lb-title"><span class="lb-live-dot"></span> Today's Top Players</div>
+      <div id="splash-lb"><div style="color:rgba(201,184,240,0.3);font-size:0.8rem;padding:0.5rem 0;">Loading leaderboard...</div></div>
+    </div>
+
+    <div class="splash-branding">Powered by <span>BrainBurst</span> ✦ Trivia Engine</div>
+
+  </div>
+</div>
+
+<!-- ══ PROFILE SETUP ══ -->
+<div class="screen" id="profile-setup">
+  <div class="inner-screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('splash')">←</button>
+      <div class="screen-title">YOUR PROFILE</div>
+    </div>
+    <div class="section-label">Choose Your Avatar</div>
+    <div class="profile-avatar-grid" id="avatar-grid"></div>
+    <div class="form-group">
+      <label>Display Name</label>
+      <input type="text" id="username-input" placeholder="Enter your name..." maxlength="20" oninput="updatePreview()">
+    </div>
+    <div class="profile-preview">
+      <div class="profile-ava" id="preview-ava">😎</div>
+      <div style="flex:1">
+        <div class="profile-name" id="preview-name">Your Name</div>
+        <div class="profile-meta" id="preview-meta">New Player · 0 Games</div>
+      </div>
+      <div class="profile-badge-tag" id="preview-badge">ROOKIE</div>
+    </div>
+    <button class="btn-primary" onclick="goToPayment()">Continue to Payment →</button>
+  </div>
+</div>
+
+<!-- ══ PAYMENT ══ -->
+<div class="screen" id="payment">
+  <div class="inner-screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('profile-setup')">←</button>
+      <div class="screen-title">CHECKOUT</div>
+    </div>
+    <div class="pay-card">
+      <h3>Pay With</h3>
+      <div class="pay-methods">
+        <div class="pay-method selected" onclick="selectPay(this,'stripe')"><span class="pm-icon">💳</span>Card</div>
+        <div class="pay-method" onclick="selectPay(this,'apple')"><span class="pm-icon"></span>Apple Pay</div>
+        <div class="pay-method" onclick="selectPay(this,'venmo')"><span class="pm-icon">💙</span>Venmo</div>
+        <div class="pay-method" onclick="selectPay(this,'paypal')"><span class="pm-icon">🅿️</span>PayPal</div>
+      </div>
+      <div id="stripe-section">
+        <div class="form-group">
+          <label>Card Details</label>
+          <div id="stripe-card-element"></div>
+          <div id="stripe-errors"></div>
+        </div>
+        <div class="form-group">
+          <label>Name on Card</label>
+          <input type="text" id="cardholder-name" placeholder="Jane Smith">
+        </div>
+      </div>
+      <div id="alt-pay-section" style="display:none;">
+        <div class="alt-pay-box">
+          <span class="alt-pay-icon" id="alt-icon">💙</span>
+          <div id="alt-msg">You'll be redirected to complete payment.</div>
+        </div>
+      </div>
+      <div class="price-summary">
+        <div>
+          <div style="font-weight:700" id="pay-label">First Game</div>
+          <div style="font-size:0.72rem;color:rgba(245,242,235,0.4)">Funds auto-deposited to your account</div>
+        </div>
+        <div class="amount" id="pay-amount">$5</div>
+      </div>
+    </div>
+    <div class="secure-note">🔒 Secured by <span class="stripe-badge">Stripe</span> · 256-bit encryption</div>
+    <button class="btn-primary" id="pay-btn" onclick="processPayment()">
+      Pay <span id="pay-btn-amount">$5</span> & Play Now →
+    </button>
+    <div style="font-size:0.72rem;color:rgba(245,242,235,0.3);text-align:center;margin-top:0.75rem;">No refunds on completed games.</div>
+  </div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div class="screen" id="game">
+  <div class="game-top">
+    <div class="q-counter">Q <span id="q-num">1</span>/10</div>
+    <div class="streak-badge" id="streak-badge">🔥 0 streak</div>
+    <div class="score-live">⚡ <span id="live-score">0</span></div>
+  </div>
+  <div class="timer-container">
+    <div class="timer-bar-track"><div class="timer-bar-fill" id="timer-bar"></div></div>
+    <div class="timer-display"><span id="timer-sec">15</span>s</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.5rem;padding:0 1.5rem;margin-top:1rem;">
+    <div class="cat-tag" id="cat-tag">🎯 Category</div>
+    <span class="diff-tag diff-easy" id="diff-tag">EASY</span>
+  </div>
+  <div class="question-area">
+    <div class="question-text" id="question-text">Loading...</div>
+  </div>
+  <div class="options-grid" id="options-grid"></div>
+  <div class="fact-box" id="fact-box"><strong>💡 Did You Know?</strong><span id="fact-text"></span></div>
+  <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question →</button>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div class="screen" id="results">
+  <div class="result-header">
+    <span class="result-emoji" id="result-emoji">🏆</span>
+    <div class="result-title" id="result-title">LEGEND</div>
+    <div class="result-sub" id="result-sub">Top 5%!</div>
+  </div>
+
+  <div class="profile-strip">
+    <div class="profile-ava" id="res-avatar">😎</div>
+    <div style="flex:1">
+      <div class="profile-name" id="res-name">Player</div>
+      <div class="profile-meta" id="res-meta">Game #1</div>
+    </div>
+    <div class="profile-badge-tag" id="res-badge">ROOKIE</div>
+  </div>
+
+  <div class="score-card">
+    <div class="score-main">
+      <div class="score-num" id="final-score">0</div>
+      <div class="score-max">out of 1000 pts</div>
+    </div>
+    <div class="score-stats">
+      <div><div class="score-stat-num" id="stat-correct" style="color:var(--green)">0</div><div class="score-stat-label">Correct</div></div>
+      <div><div class="score-stat-num" id="stat-streak" style="color:var(--orange)">0</div><div class="score-stat-label">Best Streak</div></div>
+      <div><div class="score-stat-num" id="stat-speed" style="color:var(--blue)">—</div><div class="score-stat-label">Avg Speed</div></div>
+    </div>
+  </div>
+
+  <div class="rank-callout" id="rank-callout">
+    <div class="rank-callout-icon">📊</div>
+    <div>
+      <div class="rank-callout-text" id="rank-text">Calculating rank...</div>
+      <div class="rank-callout-sub" id="rank-sub">Among today's players</div>
+    </div>
+  </div>
+
+  <div class="lb-card">
+    <div class="lb-header">
+      <div class="lb-title"><span class="lb-live-dot"></span>Leaderboard</div>
+      <div class="lb-tabs">
+        <button class="lb-tab active" onclick="switchLbTab(this,'today')">Today</button>
+        <button class="lb-tab" onclick="switchLbTab(this,'week')">Week</button>
+        <button class="lb-tab" onclick="switchLbTab(this,'alltime')">All Time</button>
+      </div>
+    </div>
+    <div id="lb-list"><div class="lb-loading">Loading leaderboard...</div></div>
+  </div>
+
+  <div class="challenge-link" onclick="copyChallenge()">
+    <div>🔗</div>
+    <div class="challenge-url" id="challenge-url">brainburst.game/challenge/you</div>
+    <div style="font-size:0.75rem;color:var(--yellow);font-weight:700;flex-shrink:0;">COPY</div>
+  </div>
+
+  <div style="width:100%;margin-bottom:0.75rem;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;text-align:center;margin-bottom:0.75rem;">📣 Challenge Your Friends</div>
+    <div class="share-grid">
+      <div class="share-btn" onclick="shareGame('text')"><span class="share-icon">💬</span>Text</div>
+      <div class="share-btn" onclick="shareGame('facebook')"><span class="share-icon">👥</span>Facebook</div>
+      <div class="share-btn" onclick="shareGame('twitter')"><span class="share-icon">🐦</span>Twitter</div>
+      <div class="share-btn" onclick="shareGame('copy')"><span class="share-icon">📋</span>Copy</div>
+    </div>
+  </div>
+  <button class="play-again-btn" onclick="playAgain()">🔁 Play Again — $2</button>
+  <button class="btn-secondary" onclick="showScreen('splash')" style="width:100%">← Back to Home</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  ⚙️ CONFIG — Update these with your real values
+// ═══════════════════════════════════════════════
+const CONFIG = {
+  // Your Stripe publishable key (from stripe.com → Dashboard → API Keys)
+  stripeKey: 'pk_live_51TCKzWRJ0l4edNC9tUjbnuob4y8bSOYIPbmDXHv4vXtpxomPlWOWftufEYgdRuHKG1AtKFJA4YtvBDsA320C4GJJ00QN3wKjLV',
+
+  // Your deployed backend URL (from Railway / Render / Heroku)
+  apiUrl: 'https://triv-production.up.railway.app',
+
+  // Demo mode: false = skip real payments (for testing)
+  // Set to false when going live!
+  demoMode: true,
+};
+
+// ═══════════════════════════════════════════════
+//  QUESTIONS (50+, shuffled each game)
+// ═══════════════════════════════════════════════
+const ALL_QUESTIONS = [
+  {cat:'🎬 Pop Culture',diff:'easy',q:'Which movie holds the record for most Academy Award wins (11 Oscars)?',opts:['Titanic','Ben-Hur','Lord of the Rings: Return of the King','Gone with the Wind'],ans:2,fact:'LOTR: Return of the King won every single category it was nominated in at the 2004 Oscars — a perfect night!'},
+  {cat:'🎬 Pop Culture',diff:'easy',q:'"We are Groot" is from which Marvel movie?',opts:['Avengers: Endgame','Guardians of the Galaxy','Thor: Ragnarok','Doctor Strange'],ans:1,fact:'Groot says "We are Groot" instead of "I am Groot" — one of the MCU\'s most emotional moments.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'What was the first feature-length animated film ever released?',opts:['Bambi','Fantasia','Snow White and the Seven Dwarfs','Pinocchio'],ans:2,fact:'Snow White (1937) was Disney\'s massive gamble. Hollywood called it "Disney\'s Folly" — until it grossed $8M.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'Which platform produced "Stranger Things"?',opts:['HBO','Amazon Prime','Netflix','Disney+'],ans:2,fact:'Stranger Things was rejected by 15-20 networks before Netflix picked it up. Now one of the most-watched shows ever.'},
+  {cat:'🎬 Pop Culture',diff:'hard',q:'What is the highest-grossing R-rated film of all time?',opts:['Joker','Deadpool & Wolverine','It','The Matrix Reloaded'],ans:1,fact:'Deadpool & Wolverine (2024) crossed $1.3 billion, becoming the all-time highest-grossing R-rated film.'},
+  {cat:'🎬 Pop Culture',diff:'easy',q:'Which singer is known as the "Queen of Pop"?',opts:['Beyoncé','Madonna','Taylor Swift','Lady Gaga'],ans:1,fact:'Madonna\'s 40+ year career and cultural impact cemented the Queen of Pop title long ago.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'What year did the iPhone first launch?',opts:['2005','2006','2007','2008'],ans:2,fact:'Steve Jobs unveiled the iPhone on January 9, 2007, calling it "an iPod, a phone, and an internet communicator."'},
+  {cat:'🎬 Pop Culture',diff:'hard',q:'What is the best-selling video game of all time (single game)?',opts:['GTA V','Tetris','Minecraft','Wii Sports'],ans:2,fact:'Minecraft has sold over 238 million copies across all platforms and is still growing.'},
+  {cat:'🎬 Pop Culture',diff:'easy',q:'How many seasons did "Friends" run on NBC?',opts:['8','9','10','12'],ans:2,fact:'Friends ran 10 seasons (1994–2004) and remains one of the most syndicated shows in TV history.'},
+  {cat:'🎬 Pop Culture',diff:'hard',q:'What country does BTS originate from?',opts:['Japan','China','South Korea','Taiwan'],ans:2,fact:'BTS is from Seoul, South Korea, and became the first K-pop group to reach #1 on the Billboard Hot 100.'},
+  {cat:'🎬 Pop Culture',diff:'medium',q:'Which artist won the most Grammy awards as of 2024?',opts:['Beyoncé','Jay-Z','Taylor Swift','Georg Solti'],ans:0,fact:'Beyoncé surpassed Georg Solti\'s record of 31 Grammys, becoming the most decorated Grammy winner of all time.'},
+  {cat:'⚽ Sports',diff:'easy',q:'How many players are on a basketball team on the court?',opts:['4','5','6','7'],ans:1,fact:'5 players per team = 10 total on the court. Positions: PG, SG, SF, PF, and Center.'},
+  {cat:'⚽ Sports',diff:'easy',q:'Which country has won the most FIFA World Cup titles?',opts:['Germany','Argentina','Brazil','Italy'],ans:2,fact:'Brazil has won the World Cup 5 times: 1958, 1962, 1970, 1994, and 2002.'},
+  {cat:'⚽ Sports',diff:'medium',q:'How many dimples does a regulation golf ball have?',opts:['108','336','420','500'],ans:1,fact:'Standard golf balls have 336 dimples. They reduce drag and increase lift for longer, straighter flights.'},
+  {cat:'⚽ Sports',diff:'medium',q:'Which NBA player has won the most regular season MVP awards?',opts:['Michael Jordan','LeBron James','Kareem Abdul-Jabbar','Bill Russell'],ans:2,fact:'Kareem Abdul-Jabbar won 6 MVP awards between 1971–1980. His skyhook was literally unguardable.'},
+  {cat:'⚽ Sports',diff:'easy',q:'How long is a standard marathon in miles?',opts:['24.2','25.2','26.2','27.2'],ans:2,fact:'26.2 miles (42.195 km). The distance traces back to the legend of Pheidippides running from Marathon to Athens.'},
+  {cat:'⚽ Sports',diff:'medium',q:'In tennis, what does "love" mean?',opts:['15 points','30 points','Zero','Advantage'],ans:2,fact:'"Love" means zero in tennis. It likely comes from the French "l\'oeuf" (egg) — representing the zero shape.'},
+  {cat:'⚽ Sports',diff:'hard',q:'Who holds the record for most career home runs in MLB history?',opts:['Babe Ruth','Hank Aaron','Barry Bonds','Alex Rodriguez'],ans:2,fact:'Barry Bonds holds the all-time record with 762 home runs, though his career is controversial due to PED allegations.'},
+  {cat:'⚽ Sports',diff:'hard',q:'What is the fastest tennis serve ever recorded?',opts:['143 mph','155 mph','163 mph','175 mph'],ans:2,fact:'Sam Groth (Australia) set the world record at 163.4 mph in 2012. That\'s faster than some NASCAR straights!'},
+  {cat:'⚽ Sports',diff:'easy',q:'How many rings did Michael Jordan win with the Chicago Bulls?',opts:['4','5','6','7'],ans:2,fact:'Jordan won 6 championships in 6 Finals appearances — and won Finals MVP all 6 times. Zero Game 7s.'},
+  {cat:'⚽ Sports',diff:'medium',q:'Which country hosted the 2022 FIFA World Cup?',opts:['UAE','Saudi Arabia','Qatar','Bahrain'],ans:2,fact:'Qatar became the first Middle Eastern country to host the World Cup, with Argentina winning the tournament.'},
+  {cat:'📚 History',diff:'easy',q:'In what year did the Berlin Wall fall?',opts:['1987','1989','1991','1993'],ans:1,fact:'November 9, 1989. East and West Berliners tore it down with hammers and pickaxes in one of history\'s best nights.'},
+  {cat:'📚 History',diff:'easy',q:'Who was the first person to walk on the Moon?',opts:['Buzz Aldrin','Yuri Gagarin','Neil Armstrong','John Glenn'],ans:2,fact:'Neil Armstrong stepped onto the Moon on July 20, 1969: "That\'s one small step for man, one giant leap for mankind."'},
+  {cat:'📚 History',diff:'medium',q:'Who was the first woman to win a Nobel Prize?',opts:['Rosalind Franklin','Marie Curie','Ada Lovelace','Florence Nightingale'],ans:1,fact:'Marie Curie won in Physics (1903) and Chemistry (1911) — the only person to win Nobel Prizes in two sciences.'},
+  {cat:'📚 History',diff:'hard',q:'Which ancient wonder of the world still exists today?',opts:['Colossus of Rhodes','Hanging Gardens of Babylon','Great Pyramid of Giza','Temple of Artemis'],ans:2,fact:'The Great Pyramid of Giza is the only surviving ancient wonder. It was Earth\'s tallest structure for 3,800 years.'},
+  {cat:'📚 History',diff:'medium',q:'What year did World War II end?',opts:['1943','1944','1945','1946'],ans:2,fact:'WWII ended in 1945: V-E Day (May 8) for Europe and V-J Day (Sep 2) for Japan after the atomic bombings.'},
+  {cat:'📚 History',diff:'easy',q:'Who invented the telephone?',opts:['Thomas Edison','Nikola Tesla','Alexander Graham Bell','Guglielmo Marconi'],ans:2,fact:'Bell patented the telephone in 1876. His first words: "Mr. Watson, come here, I want to see you."'},
+  {cat:'📚 History',diff:'hard',q:'How many years did Nelson Mandela spend in prison?',opts:['18','22','27','32'],ans:2,fact:'Mandela was imprisoned for 27 years (1964–1990) — mostly on Robben Island — before becoming South Africa\'s president.'},
+  {cat:'📚 History',diff:'easy',q:'In which country did the Industrial Revolution begin?',opts:['France','Germany','United States','Great Britain'],ans:3,fact:'The Industrial Revolution started in Great Britain in the late 18th century, transforming textile manufacturing first.'},
+  {cat:'📚 History',diff:'hard',q:'What was the name of the world\'s first artificial satellite?',opts:['Explorer 1','Vostok 1','Sputnik 1','Luna 1'],ans:2,fact:'Sputnik 1 was launched by the USSR on October 4, 1957 — kicking off the Space Race and terrifying the West.'},
+  {cat:'📚 History',diff:'medium',q:'Who painted the Mona Lisa?',opts:['Michelangelo','Leonardo da Vinci','Raphael','Caravaggio'],ans:1,fact:'Leonardo da Vinci painted the Mona Lisa between 1503–1519. It\'s housed in the Louvre and insured for billions.'},
+  {cat:'🌍 Geography',diff:'easy',q:'Which country has the most natural lakes in the world?',opts:['Russia','USA','Canada','Finland'],ans:2,fact:'Canada has over 3 million lakes — more than 60% of the world\'s total. Land of lakes and hockey!'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the capital city of Australia?',opts:['Sydney','Melbourne','Brisbane','Canberra'],ans:3,fact:'Canberra is the capital, not Sydney! It was purpose-built to settle a rivalry between Sydney and Melbourne.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which is the longest river in the world?',opts:['Amazon','Congo','Mississippi','Nile'],ans:3,fact:'The Nile stretches ~4,130 miles (6,650 km). Some measurements put the Amazon ahead due to source definitions.'},
+  {cat:'🌍 Geography',diff:'medium',q:'How many countries are in Africa?',opts:['48','54','58','62'],ans:1,fact:'Africa has 54 recognized countries — the most of any continent. Nigeria alone has over 225 million people.'},
+  {cat:'🌍 Geography',diff:'easy',q:'What is the smallest country in the world?',opts:['Monaco','San Marino','Liechtenstein','Vatican City'],ans:3,fact:'Vatican City covers just 0.44 km² — smaller than many city parks. It\'s an independent city-state within Rome.'},
+  {cat:'🌍 Geography',diff:'hard',q:'What percentage of Earth\'s surface is covered by water?',opts:['61%','71%','81%','91%'],ans:1,fact:'About 71% of Earth\'s surface is water, but 97% of that is salty ocean. Only 3% is freshwater.'},
+  {cat:'🌍 Geography',diff:'medium',q:'Which country has the most time zones?',opts:['Russia','USA','China','France'],ans:3,fact:'France has 12 time zones due to overseas territories — more than Russia (11) or USA (11).'},
+  {cat:'🌍 Geography',diff:'easy',q:'Which mountain is the tallest in the world?',opts:['K2','Kilimanjaro','Mount Everest','Mont Blanc'],ans:2,fact:'Mount Everest stands at 29,032 feet (8,849 m). It grows about 0.1–0.3 inches per year due to tectonic movement.'},
+  {cat:'🌍 Geography',diff:'hard',q:'What is the driest place on Earth?',opts:['Sahara Desert','Death Valley','Atacama Desert','Arabian Desert'],ans:2,fact:'The Atacama Desert in Chile averages less than 1mm of rain per year. Some areas have never recorded any rainfall.'},
+  {cat:'🧬 Science',diff:'easy',q:'How long does light from the Sun take to reach Earth?',opts:['2 minutes','8 minutes','20 minutes','1 hour'],ans:1,fact:'About 8 minutes 20 seconds. If the Sun disappeared right now, you\'d have 8 blissful minutes before darkness.'},
+  {cat:'🧬 Science',diff:'easy',q:'What is the chemical symbol for gold?',opts:['Go','Gd','Au','Ag'],ans:2,fact:'"Au" comes from the Latin "Aurum." Gold has been valued for 5,000+ years and never corrodes or tarnishes.'},
+  {cat:'🧬 Science',diff:'medium',q:'How many bones does an adult human body have?',opts:['156','206','256','306'],ans:1,fact:'Adults have 206 bones, but babies are born with ~270-300! Many fuse together during childhood.'},
+  {cat:'🧬 Science',diff:'medium',q:'What is the most abundant gas in Earth\'s atmosphere?',opts:['Oxygen','Carbon Dioxide','Argon','Nitrogen'],ans:3,fact:'Nitrogen makes up ~78% of our atmosphere. Oxygen is only ~21%. CO₂ is 0.04% but causes major warming.'},
+  {cat:'🧬 Science',diff:'easy',q:'How many chromosomes do humans have?',opts:['23','46','48','92'],ans:1,fact:'Humans have 46 chromosomes (23 pairs). Chimpanzees have 48! The difference helped us specialize cognitively.'},
+  {cat:'🧬 Science',diff:'hard',q:'What is the half-life of Carbon-14?',opts:['1,430 years','5,730 years','14,000 years','57,000 years'],ans:1,fact:'C-14\'s 5,730-year half-life is why radiocarbon dating works for items up to ~50,000 years old.'},
+  {cat:'🧬 Science',diff:'medium',q:'Which planet has the most moons in our solar system?',opts:['Jupiter','Saturn','Uranus','Neptune'],ans:1,fact:'Saturn has 146 confirmed moons (2023) — overtaking Jupiter\'s 95. The count grows each year as we discover more.'},
+  {cat:'🧬 Science',diff:'easy',q:'What is the powerhouse of the cell?',opts:['Nucleus','Ribosome','Mitochondria','Vacuole'],ans:2,fact:'The mitochondria produces ATP energy through cellular respiration. This fact lives rent-free in everyone\'s head.'},
+  {cat:'🧬 Science',diff:'hard',q:'What is the rarest blood type?',opts:['AB-','O-','B-','A-'],ans:0,fact:'AB- is found in fewer than 1% of people. O- is the universal blood donor; AB+ is the universal plasma donor.'},
+  {cat:'🧬 Science',diff:'medium',q:'What force keeps planets orbiting the Sun?',opts:['Magnetism','Nuclear force','Gravity','Centrifugal force'],ans:2,fact:'Gravity is a mutual attraction between masses. The Sun\'s enormous mass bends spacetime, keeping planets in orbit.'},
+];
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+const AVATARS = ['😎','🔥','⚡','🎯','💪','🧠','🎮','🌟','🦊','🐺','🦁','👑','🤖','👾','🎭','🏆','💎','🚀','🌈','⭐'];
+
+let state = {
+  isReturn:false, username:'', avatar:'😎', playerId:'',
+  currentQ:0, score:0, streak:0, bestStreak:0, correct:0,
+  answered:false, timerInterval:null, timeLeft:15, answerTimes:[],
+  questionStart:null, payMethod:'stripe', gameQuestions:[],
+  gamesPlayed:0, currentLbPeriod:'today',
+};
+
+let stripe, cardElement;
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+window.addEventListener('load', () => {
+  buildAvatarGrid();
+  initStripe();
+  loadSavedProfile();
+  fetchSplashLeaderboard();
+});
+
+function generatePlayerId() {
+  return 'p_' + Date.now().toString(36) + Math.random().toString(36).substr(2,9);
+}
+
+function loadSavedProfile() {
+  const saved = JSON.parse(localStorage.getItem('bb_profile') || '{}');
+  if (saved.username) {
+    state.username    = saved.username;
+    state.avatar      = saved.avatar || '😎';
+    state.gamesPlayed = saved.gamesPlayed || 0;
+    state.playerId    = saved.playerId || generatePlayerId();
+    document.getElementById('username-input').value = state.username;
+    updatePreview();
+    document.querySelectorAll('.avatar-opt').forEach(el => {
+      el.classList.toggle('selected', el.dataset.av === state.avatar);
+    });
+  } else {
+    state.playerId = generatePlayerId();
+  }
+  saveProfile();
+}
+
+function saveProfile() {
+  localStorage.setItem('bb_profile', JSON.stringify({
+    username: state.username, avatar: state.avatar,
+    gamesPlayed: state.gamesPlayed, playerId: state.playerId,
+  }));
+}
+
+function buildAvatarGrid() {
+  const grid = document.getElementById('avatar-grid');
+  AVATARS.forEach(av => {
+    const el = document.createElement('div');
+    el.className = 'avatar-opt' + (av === state.avatar ? ' selected' : '');
+    el.textContent = av;
+    el.dataset.av = av;
+    el.onclick = () => {
+      document.querySelectorAll('.avatar-opt').forEach(a => a.classList.remove('selected'));
+      el.classList.add('selected');
+      state.avatar = av;
+      document.getElementById('preview-ava').textContent = av;
+    };
+    grid.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  API CALLS
+// ═══════════════════════════════════════════════
+async function apiFetch(path, options = {}) {
+  const res = await fetch(CONFIG.apiUrl + path, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...options.headers },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+async function fetchSplashLeaderboard() {
+  try {
+    if (CONFIG.demoMode) { renderSplashLb(getMockLb()); return; }
+    const data = await apiFetch('/api/leaderboard?period=today&limit=3');
+    renderSplashLb(data.leaderboard);
+  } catch { renderSplashLb(getMockLb()); }
+}
+
+function getMockLb() {
+  return [
+    { rank:1, playerName:'Jordan K.', avatar:'😎', score:980 },
+    { rank:2, playerName:'Alex T.',   avatar:'🔥', score:940 },
+    { rank:3, playerName:'Sam R.',    avatar:'⚡', score:905 },
+  ];
+}
+
+function renderSplashLb(entries) {
+  const el = document.getElementById('splash-lb');
+  const medals = ['🥇','🥈','🥉'];
+  el.innerHTML = entries.map((p,i) => `
+    <div class="splash-lb-row">
+      <span>${medals[i]}</span>
+      <span>${p.avatar} ${p.playerName}</span>
+      <span class="splash-lb-score">${p.score}</span>
+    </div>
+  `).join('');
+}
+
+async function fetchLeaderboard(period = 'today') {
+  const list = document.getElementById('lb-list');
+  list.innerHTML = '<div class="lb-loading">⏳ Loading...</div>';
+  try {
+    if (CONFIG.demoMode) {
+      await new Promise(r => setTimeout(r, 600));
+      renderLeaderboard(getMockLbFull(), period);
+      return;
+    }
+    const data = await apiFetch(`/api/leaderboard?period=${period}&limit=10`);
+    renderLeaderboard(data.leaderboard, period);
+  } catch {
+    list.innerHTML = '<div class="lb-empty">Could not load leaderboard.</div>';
+  }
+}
+
+function getMockLbFull() {
+  const base = [
+    { rank:1, playerName:'Jordan K.', avatar:'😎', score:980, playerId:'mock1' },
+    { rank:2, playerName:'Alex T.',   avatar:'🔥', score:940, playerId:'mock2' },
+    { rank:3, playerName:'Sam R.',    avatar:'⚡', score:905, playerId:'mock3' },
+    { rank:4, playerName:'Riley M.',  avatar:'🎯', score:870, playerId:'mock4' },
+    { rank:5, playerName:'Casey P.',  avatar:'💪', score:820, playerId:'mock5' },
+    { rank:6, playerName:'Morgan L.', avatar:'🧠', score:760, playerId:'mock6' },
+  ];
+  // Insert current player
+  const myEntry = { rank:0, playerName:state.username, avatar:state.avatar, score:state.score, playerId:state.playerId, isYou:true };
+  const combined = [...base, myEntry].sort((a,b) => b.score - a.score).map((e,i) => ({...e,rank:i+1}));
+  return combined.slice(0,10);
+}
+
+function renderLeaderboard(entries, period) {
+  const medals = ['🥇','🥈','🥉'];
+  const list = document.getElementById('lb-list');
+  if (!entries.length) { list.innerHTML = '<div class="lb-empty">No scores yet. Be the first!</div>'; return; }
+  list.innerHTML = entries.map((p, i) => {
+    const isYou = p.playerId === state.playerId || p.isYou;
+    return `
+      <div class="lb-row ${isYou ? 'you' : ''}">
+        <div class="lb-rank">${medals[i] || p.rank}</div>
+        <div class="lb-avatar">${p.avatar || '😎'}</div>
+        <div class="lb-name">${p.playerName}${isYou ? ' <span style="font-size:0.65rem;color:var(--yellow);font-weight:400">(you)</span>' : ''}</div>
+        <div class="lb-score">${p.score}</div>
+      </div>`;
+  }).join('');
+}
+
+async function submitScore() {
+  if (CONFIG.demoMode) return;
+  try {
+    const avgSpeed = state.answerTimes.length
+      ? (state.answerTimes.reduce((a,b)=>a+b,0) / state.answerTimes.length).toFixed(1)
+      : 0;
+    await apiFetch('/api/submit-score', {
+      method: 'POST',
+      body: JSON.stringify({
+        playerId: state.playerId, playerName: state.username, avatar: state.avatar,
+        score: state.score, correct: state.correct, bestStreak: state.bestStreak, avgSpeed,
+      }),
+    });
+  } catch (e) { console.error('Score submit failed:', e); }
+}
+
+async function fetchPlayerRank() {
+  if (CONFIG.demoMode) {
+    const mockRank = Math.floor(Math.random() * 50) + 1;
+    document.getElementById('rank-text').textContent = `You're ranked #${mockRank} today`;
+    document.getElementById('rank-sub').textContent = 'Among all players today';
+    return;
+  }
+  try {
+    const data = await apiFetch(`/api/player/${state.playerId}/rank?period=today`);
+    document.getElementById('rank-text').textContent = `You're ranked #${data.rank} today`;
+    document.getElementById('rank-sub').textContent = 'Among all players today';
+  } catch { document.getElementById('rank-text').textContent = 'Rank calculating...'; }
+}
+
+// ═══════════════════════════════════════════════
+//  STRIPE
+// ═══════════════════════════════════════════════
+function initStripe() {
+  if (CONFIG.demoMode) return;
+  try {
+    stripe = Stripe(CONFIG.stripeKey);
+    const elements = stripe.elements({
+      appearance: { theme:'night', variables:{ colorPrimary:'#FFE135', colorBackground:'#1a1a1a', colorText:'#f5f2eb', borderRadius:'12px' } }
+    });
+    cardElement = elements.create('card');
+    cardElement.mount('#stripe-card-element');
+    cardElement.on('change', e => {
+      document.getElementById('stripe-errors').textContent = e.error ? e.error.message : '';
+    });
+  } catch(e) { console.warn('Stripe init failed:', e); }
+}
+
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goToProfile(isReturn) {
+  state.isReturn = isReturn;
+  showScreen('profile-setup');
+}
+
+function updatePreview() {
+  const val = document.getElementById('username-input').value.trim();
+  state.username = val || 'Your Name';
+  document.getElementById('preview-name').textContent = state.username;
+  document.getElementById('preview-meta').textContent = `${state.gamesPlayed > 0 ? 'Returning Player' : 'New Player'} · ${state.gamesPlayed} Games`;
+  const badge = state.gamesPlayed >= 20 ? '🏆 LEGEND' : state.gamesPlayed >= 5 ? '⚡ REGULAR' : '🎯 ROOKIE';
+  document.getElementById('preview-badge').textContent = badge;
+}
+
+function goToPayment() {
+  const name = document.getElementById('username-input').value.trim();
+  if (!name) { showToast('Please enter a display name!'); return; }
+  state.username = name;
+  saveProfile();
+  const price = state.isReturn ? '$2' : '$5';
+  document.getElementById('pay-amount').textContent = price;
+  document.getElementById('pay-btn-amount').textContent = price;
+  document.getElementById('pay-label').textContent = state.isReturn ? 'Return Player' : 'First Game';
+  showScreen('payment');
+}
+
+function selectPay(el, method) {
+  document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+  state.payMethod = method;
+  const stripeEl = document.getElementById('stripe-section');
+  const altEl    = document.getElementById('alt-pay-section');
+  if (method === 'stripe') { stripeEl.style.display='block'; altEl.style.display='none'; }
+  else {
+    stripeEl.style.display='none'; altEl.style.display='block';
+    const map = { apple:['','Redirecting to Apple Pay...'], venmo:['💙','Redirecting to Venmo to complete payment.'], paypal:['🅿️','Redirecting to PayPal to complete payment.'] };
+    document.getElementById('alt-icon').textContent = map[method][0];
+    document.getElementById('alt-msg').textContent  = map[method][1];
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  PAYMENT
+// ═══════════════════════════════════════════════
+async function processPayment() {
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Processing...';
+
+  // DEMO MODE — skip real payment
+  if (CONFIG.demoMode) {
+    await new Promise(r => setTimeout(r, 1500));
+    btn.innerHTML = '✅ Payment Confirmed!';
+    await new Promise(r => setTimeout(r, 700));
+    btn.innerHTML = `Pay ${state.isReturn?'$2':'$5'} & Play Now →`;
+    btn.disabled = false;
+    startGame();
+    return;
+  }
+
+  // REAL STRIPE PAYMENT
+  try {
+    const { clientSecret } = await apiFetch('/api/create-payment-intent', {
+      method: 'POST',
+      body: JSON.stringify({ playerId:state.playerId, playerName:state.username, isReturn:state.isReturn }),
+    });
+
+    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: cardElement,
+        billing_details: { name: document.getElementById('cardholder-name').value },
+      },
+    });
+
+    if (error) {
+      document.getElementById('stripe-errors').textContent = error.message;
+      btn.innerHTML = `Pay ${state.isReturn?'$2':'$5'} & Play Now →`;
+      btn.disabled = false;
+    } else if (paymentIntent.status === 'succeeded') {
+      btn.innerHTML = '✅ Payment Confirmed!';
+      await new Promise(r => setTimeout(r, 700));
+      btn.innerHTML = `Pay ${state.isReturn?'$2':'$5'} & Play Now →`;
+      btn.disabled = false;
+      startGame();
+    }
+  } catch(err) {
+    document.getElementById('stripe-errors').textContent = err.message || 'Payment failed. Please try again.';
+    btn.innerHTML = `Pay ${state.isReturn?'$2':'$5'} & Play Now →`;
+    btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  GAME ENGINE
+// ═══════════════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function startGame() {
+  state.currentQ=0; state.score=0; state.streak=0; state.bestStreak=0;
+  state.correct=0; state.answerTimes=[]; state.gamesPlayed++;
+  state.gameQuestions = shuffle(ALL_QUESTIONS).slice(0,10);
+  saveProfile();
+  showScreen('game');
+  loadQuestion();
+}
+
+function loadQuestion() {
+  const q = state.gameQuestions[state.currentQ];
+  state.answered=false; state.timeLeft=15; state.questionStart=Date.now();
+
+  document.getElementById('q-num').textContent = state.currentQ+1;
+  document.getElementById('cat-tag').textContent = q.cat;
+  const diffEl = document.getElementById('diff-tag');
+  diffEl.textContent = q.diff.toUpperCase();
+  diffEl.className = `diff-tag diff-${q.diff}`;
+  document.getElementById('question-text').textContent = q.q;
+  document.getElementById('live-score').textContent = state.score;
+  document.getElementById('fact-box').classList.remove('show');
+  document.getElementById('next-btn').classList.remove('show');
+  const badge = document.getElementById('streak-badge');
+  badge.textContent = `🔥 ${state.streak} streak`;
+  badge.classList.toggle('hot', state.streak >= 3);
+
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.opts.forEach((opt,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => selectAnswer(i);
+    grid.appendChild(btn);
+  });
+
+  clearInterval(state.timerInterval);
+  updateTimerBar();
+  state.timerInterval = setInterval(() => {
+    state.timeLeft -= 0.1;
+    updateTimerBar();
+    if (state.timeLeft <= 0) { clearInterval(state.timerInterval); if (!state.answered) timeOut(); }
+  }, 100);
+}
+
+function updateTimerBar() {
+  const pct = Math.max(0,(state.timeLeft/15)*100);
+  const bar = document.getElementById('timer-bar');
+  bar.style.width = pct+'%';
+  bar.classList.toggle('urgent', state.timeLeft < 5);
+  document.getElementById('timer-sec').textContent = Math.ceil(Math.max(0,state.timeLeft));
+}
+
+function selectAnswer(idx) {
+  if (state.answered) return;
+  state.answered = true;
+  clearInterval(state.timerInterval);
+  state.answerTimes.push(Math.min((Date.now()-state.questionStart)/1000, 15));
+
+  const q = state.gameQuestions[state.currentQ];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled=true);
+  const isCorrect = idx === q.ans;
+
+  if (isCorrect) {
+    btns[idx].classList.add('correct');
+    const timeBonus = Math.round(state.timeLeft * 5);
+    const streakBonus = state.streak >= 3 ? 30 : state.streak >= 2 ? 15 : 0;
+    const diffBonus = q.diff==='hard'?30:q.diff==='medium'?15:0;
+    const pts = 70 + timeBonus + streakBonus + diffBonus;
+    state.score += pts; state.streak++; state.correct++;
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+    showPtsPopup(`+${pts}`, btns[idx]);
+    document.body.className='correct-flash';
+    setTimeout(()=>document.body.className='',500);
+    if (state.streak >= 3) showToast(`🔥 ${state.streak}x Streak! +${streakBonus} bonus!`);
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[q.ans].classList.add('correct');
+    state.streak = 0;
+    document.body.className='wrong-flash';
+    setTimeout(()=>document.body.className='',500);
+  }
+
+  btns.forEach((b,i)=>{ if(i!==idx&&i!==q.ans) b.classList.add('reveal'); });
+  document.getElementById('fact-text').textContent = q.fact;
+  document.getElementById('fact-box').classList.add('show');
+  document.getElementById('streak-badge').textContent=`🔥 ${state.streak} streak`;
+  document.getElementById('streak-badge').classList.toggle('hot',state.streak>=3);
+  document.getElementById('live-score').textContent = state.score;
+  const nb = document.getElementById('next-btn');
+  nb.classList.add('show');
+  nb.textContent = state.currentQ<9?'Next Question →':'🏁 See Your Results!';
+}
+
+function timeOut() {
+  state.answered=true; state.streak=0;
+  const q=state.gameQuestions[state.currentQ];
+  const btns=document.querySelectorAll('.option-btn');
+  btns.forEach(b=>b.disabled=true);
+  btns[q.ans].classList.add('correct');
+  document.getElementById('fact-text').textContent=q.fact;
+  document.getElementById('fact-box').classList.add('show');
+  const nb=document.getElementById('next-btn');
+  nb.classList.add('show');
+  nb.textContent=state.currentQ<9?'Next Question →':'🏁 See Your Results!';
+  showToast("⏰ Time's up!");
+}
+
+function nextQuestion() {
+  state.currentQ++;
+  if (state.currentQ>=10) showResults();
+  else loadQuestion();
+}
+
+function showPtsPopup(text, target) {
+  const rect=target.getBoundingClientRect();
+  const pop=document.createElement('div');
+  pop.className='pts-popup';
+  pop.textContent=text;
+  pop.style.left=(rect.left+rect.width/2-25)+'px';
+  pop.style.top=(rect.top+window.scrollY-10)+'px';
+  document.body.appendChild(pop);
+  setTimeout(()=>pop.remove(),1000);
+}
+
+// ═══════════════════════════════════════════════
+//  RESULTS
+// ═══════════════════════════════════════════════
+async function showResults() {
+  showScreen('results');
+
+  document.getElementById('stat-correct').textContent=`${state.correct}/10`;
+  document.getElementById('stat-streak').textContent=state.bestStreak;
+  const avg=state.answerTimes.length?(state.answerTimes.reduce((a,b)=>a+b,0)/state.answerTimes.length).toFixed(1)+'s':'—';
+  document.getElementById('stat-speed').textContent=avg;
+  document.getElementById('res-avatar').textContent=state.avatar;
+  document.getElementById('res-name').textContent=state.username;
+  document.getElementById('res-meta').textContent=`Game #${state.gamesPlayed} · Best streak: ${state.bestStreak}`;
+  const pct=state.score/1000;
+  const badge=pct>=0.9?'🏆 LEGEND':pct>=0.75?'🔥 EXPERT':pct>=0.55?'⚡ SOLID':pct>=0.35?'🎯 ROOKIE':'💀 BEGINNER';
+  document.getElementById('res-badge').textContent=badge;
+
+  let emoji,title,sub;
+  if(pct>=0.9){emoji='🏆';title='LEGENDARY';sub='Top 5%! Send this and watch your friends spiral.';}
+  else if(pct>=0.75){emoji='🔥';title='ON FIRE';sub='Top 15%! Your friends are already nervous.';}
+  else if(pct>=0.55){emoji='⚡';title='SOLID';sub='One more round and you\'re cracking the top 25%.';}
+  else if(pct>=0.35){emoji='🤔';title='ALMOST';sub='Close! Your friends might clown you for this one.';}
+  else{emoji='💀';title='YIKES';sub='Google is free. Retry and redeem yourself.';}
+
+  document.getElementById('result-emoji').textContent=emoji;
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-sub').textContent=sub;
+
+  const slug=state.username.toLowerCase().replace(/\s+/g,'-');
+  document.getElementById('challenge-url').textContent=`brainburst.game/challenge/${slug}`;
+
+  animateCountUp('final-score',state.score,1000);
+
+  // Submit score + load leaderboard + rank in parallel
+  await Promise.all([
+    submitScore(),
+    fetchLeaderboard('today'),
+    fetchPlayerRank(),
+  ]);
+}
+
+function switchLbTab(el, period) {
+  document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  state.currentLbPeriod=period;
+  fetchLeaderboard(period);
+}
+
+function animateCountUp(id, target, dur) {
+  const el=document.getElementById(id);
+  const start=Date.now();
+  const tick=()=>{ const p=Math.min(1,(Date.now()-start)/dur); el.textContent=Math.round(p*target); if(p<1) requestAnimationFrame(tick); };
+  tick();
+}
+
+// ═══════════════════════════════════════════════
+//  SHARING
+// ═══════════════════════════════════════════════
+function getShareMsg() {
+  const pct=state.score/1000;
+  const e=pct>=0.9?'🏆':pct>=0.75?'🔥':pct>=0.55?'⚡':'💀';
+  const slug=state.username.toLowerCase().replace(/\s+/g,'-');
+  return `${e} ${state.avatar} ${state.username} scored ${state.score}/1000 on BrainBurst!\nCan you beat me? 👉 https://brainburst.game/challenge/${slug}`;
+}
+
+function shareGame(method) {
+  const msg=getShareMsg();
+  if(method==='text') window.open(`sms:?body=${encodeURIComponent(msg)}`);
+  else if(method==='facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=https://brainburst.game&quote=${encodeURIComponent(msg)}`);
+  else if(method==='twitter') window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}`);
+  else if(method==='copy'){ navigator.clipboard.writeText(msg).then(()=>showToast('📋 Copied!')); }
+}
+
+function copyChallenge() {
+  const url='https://'+document.getElementById('challenge-url').textContent;
+  navigator.clipboard.writeText(url).then(()=>showToast('🔗 Challenge link copied!'));
+}
+
+function playAgain() { state.isReturn=true; goToPayment(); }
+
+// ═══════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
