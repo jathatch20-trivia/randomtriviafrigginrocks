@@ -621,6 +621,17 @@ function loadSavedProfile() {
     document.querySelectorAll('.avatar-opt').forEach(el => {
       el.classList.toggle('selected', el.dataset.av === state.avatar);
     });
+    // Auto-detect returning player — update splash buttons and price
+    if (state.gamesPlayed > 0) {
+      state.isReturn = true;
+      const playBtn  = document.querySelector('#splash .btn-primary');
+      const returnBtn = document.querySelector('#splash .btn-secondary');
+      if (playBtn)   { playBtn.textContent = '🔁 Play Again — $2'; playBtn.onclick = () => goToProfile(true); }
+      if (returnBtn) { returnBtn.textContent = '👋 New player? First game — $5'; returnBtn.onclick = () => goToProfile(false); }
+      // Update pricing pill text
+      const pill = document.querySelector('#splash .pricing-pill');
+      if (pill) pill.innerHTML = '<span class="dot">●</span> Welcome back! Your next game is <strong>&nbsp;$2</strong>';
+    }
   } else {
     state.playerId = generatePlayerId();
   }
@@ -1154,7 +1165,7 @@ async function showResults() {
   document.getElementById('result-sub').textContent=sub;
 
   const slug=state.username.toLowerCase().replace(/\s+/g,'-');
-  document.getElementById('challenge-url').textContent=`brainburst.game/challenge/${slug}`;
+  document.getElementById('challenge-url').textContent=`randomtriviafrigginrocks.vercel.app`;
 
   animateCountUp('final-score',state.score,1000);
 
@@ -1187,19 +1198,19 @@ function getShareMsg() {
   const pct=state.score/1000;
   const e=pct>=0.9?'🏆':pct>=0.75?'🔥':pct>=0.55?'⚡':'💀';
   const slug=state.username.toLowerCase().replace(/\s+/g,'-');
-  return `${e} ${state.avatar} ${state.username} scored ${state.score}/1000 on BrainBurst!\nCan you beat me? 👉 https://brainburst.game/challenge/${slug}`;
+  return `${e} ${state.avatar} ${state.username} scored ${state.score}/1000 on Random Trivia Rocks!\nCan you beat me? 👉 https://randomtriviafrigginrocks.vercel.app`;
 }
 
 function shareGame(method) {
   const msg=getShareMsg();
   if(method==='text') window.open(`sms:?body=${encodeURIComponent(msg)}`);
-  else if(method==='facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=https://brainburst.game&quote=${encodeURIComponent(msg)}`);
+  else if(method==='facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=https://randomtriviafrigginrocks.vercel.app&quote=${encodeURIComponent(msg)}`);
   else if(method==='twitter') window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}`);
   else if(method==='copy'){ navigator.clipboard.writeText(msg).then(()=>showToast('📋 Copied!')); }
 }
 
 function copyChallenge() {
-  const url='https://'+document.getElementById('challenge-url').textContent;
+  const url='https://randomtriviafrigginrocks.vercel.app';
   navigator.clipboard.writeText(url).then(()=>showToast('🔗 Challenge link copied!'));
 }
 
