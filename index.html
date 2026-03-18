@@ -371,17 +371,19 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
     <!-- Price summary card -->
     <div class="pay-card">
-      <div style="text-align:center;padding:0.5rem 0 1.2rem;">
-        <div style="font-size:3rem;margin-bottom:0.5rem">🍎</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;margin-bottom:0.3rem" id="pay-label">First Game</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--sp-lavender);line-height:1" id="pay-amount">$2</div>
-        <div style="font-size:0.75rem;color:rgba(237,232,248,0.45);margin-top:0.4rem">One-time access · Funds auto-deposited</div>
+      <div style="text-align:center;padding:0.5rem 0 1.5rem;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:rgba(237,232,248,0.5);margin-bottom:0.3rem" id="pay-label">Play Now</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:5rem;color:var(--sp-lavender);line-height:1" id="pay-amount">$2</div>
+        <div style="font-size:0.75rem;color:rgba(237,232,248,0.4);margin-top:0.5rem">One-time access · No subscription · No ads</div>
       </div>
 
-      <!-- Apple Pay real button -->
-      <div id="apple-pay-button-container" style="margin-bottom:1rem;">
-        <div id="payment-request-button"></div>
+      <!-- Loading state while Apple Pay initializes -->
+      <div id="apple-pay-loading" style="text-align:center;padding:1rem;color:rgba(237,232,248,0.4);font-size:0.85rem;">
+        <div style="margin-bottom:0.5rem">⏳ Loading payment...</div>
       </div>
+
+      <!-- Apple Pay button mounts here -->
+      <div id="payment-request-button" style="display:none;margin-bottom:1rem;min-height:54px;"></div>
 
       <!-- Fallback message if Apple Pay not available -->
       <div id="apple-pay-unavailable" style="display:none;text-align:center;padding:1.5rem;background:rgba(255,255,255,0.04);border-radius:14px;border:1px dashed rgba(255,255,255,0.15);">
@@ -1182,18 +1184,29 @@ function initStripe() {
 
     // Check if Apple Pay is available on this device
     paymentRequest.canMakePayment().then(result => {
-      const applePayBox     = document.getElementById('apple-pay-button-container');
-      const applePayUnavail = document.getElementById('apple-pay-unavailable');
+      const loadingEl  = document.getElementById('apple-pay-loading');
+      const buttonEl   = document.getElementById('payment-request-button');
+      const unavailEl  = document.getElementById('apple-pay-unavailable');
+
+      // Hide loading spinner
+      if (loadingEl) loadingEl.style.display = 'none';
+
       if (result && (result.applePay || result.googlePay)) {
-        // Apple Pay / Google Pay available — mount the button
-        prButton.mount('#apple-pay-button-container');
-        applePayBox.style.display = 'block';
-        if (applePayUnavail) applePayUnavail.style.display = 'none';
+        // Apple Pay available — mount the real button into payment-request-button div
+        if (buttonEl) buttonEl.style.display = 'block';
+        prButton.mount('#payment-request-button');
+        if (unavailEl) unavailEl.style.display = 'none';
       } else {
-        // Not available — show friendly message
-        if (applePayBox) applePayBox.style.display = 'none';
-        if (applePayUnavail) applePayUnavail.style.display = 'block';
+        // Apple Pay not available on this device/browser
+        if (buttonEl)  buttonEl.style.display  = 'none';
+        if (unavailEl) unavailEl.style.display = 'block';
       }
+    }).catch(() => {
+      // canMakePayment failed — show unavailable message
+      const loadingEl = document.getElementById('apple-pay-loading');
+      const unavailEl = document.getElementById('apple-pay-unavailable');
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (unavailEl) unavailEl.style.display = 'block';
     });
 
     // Handle Apple Pay payment confirmation
@@ -1259,6 +1272,33 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
+
+  // Re-check Apple Pay each time payment screen is shown
+  if (id === 'payment' && stripe && paymentRequest) {
+    const loadingEl = document.getElementById('apple-pay-loading');
+    const buttonEl  = document.getElementById('payment-request-button');
+    const unavailEl = document.getElementById('apple-pay-unavailable');
+    // Reset to loading state
+    if (loadingEl) loadingEl.style.display = 'block';
+    if (buttonEl)  buttonEl.style.display  = 'none';
+    if (unavailEl) unavailEl.style.display = 'none';
+    // Re-check availability
+    paymentRequest.canMakePayment().then(result => {
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (result && (result.applePay || result.googlePay)) {
+        if (buttonEl) {
+          buttonEl.style.display = 'block';
+          // Only mount once — if already mounted it will show automatically
+          try { prButton.mount('#payment-request-button'); } catch(e) {}
+        }
+      } else {
+        if (unavailEl) unavailEl.style.display = 'block';
+      }
+    }).catch(() => {
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (unavailEl) unavailEl.style.display = 'block';
+    });
+  }
 }
 
 function goToProfile(isReturn) {
