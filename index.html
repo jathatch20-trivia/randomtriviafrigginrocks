@@ -390,6 +390,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <div style="font-size:1.5rem;margin-bottom:0.5rem">📱</div>
         <div style="font-weight:700;margin-bottom:0.4rem">Apple Pay Required</div>
         <div style="font-size:0.85rem;color:rgba(237,232,248,0.5)">Please open this game in <strong>Safari on your iPhone or Mac</strong> to pay with Apple Pay.</div>
+        <div id="apple-pay-debug" style="font-size:0.7rem;color:rgba(237,232,248,0.3);margin-top:0.5rem;word-break:break-all;"></div>
       </div>
 
       <div id="stripe-errors" style="color:var(--red);font-size:0.8rem;margin-top:0.5rem;min-height:1rem;text-align:center;"></div>
@@ -1145,31 +1146,20 @@ let paymentRequest, prButton;
 
 function initStripe() {
   if (CONFIG.demoMode) return;
+  if (!CONFIG.stripeKey || CONFIG.stripeKey.includes('YOUR_STRIPE')) return;
   try {
     stripe = Stripe(CONFIG.stripeKey);
 
-    // ── Regular card element ──
-    const elements = stripe.elements({
-      appearance: { theme:'night', variables:{ colorPrimary:'#FFE135', colorBackground:'#1a1a1a', colorText:'#f5f2eb', borderRadius:'12px' } }
-    });
-    cardElement = elements.create('card');
-    cardElement.mount('#stripe-card-element');
-    cardElement.on('change', e => {
-      document.getElementById('stripe-errors').textContent = e.error ? e.error.message : '';
-    });
-
-    // ── Apple Pay / Google Pay Payment Request Button ──
+    // Create payment request for Apple Pay
     paymentRequest = stripe.paymentRequest({
       country: 'US',
       currency: 'usd',
-      total: {
-        label: 'Random Trivia Rocks',
-        amount: 200,
-      },
-      requestPayerName: true,
+      total: { label: 'Random Trivia Rocks', amount: 200 },
+      requestPayerName: false,
       requestPayerEmail: false,
     });
 
+    // Create the button element
     const prElements = stripe.elements();
     prButton = prElements.create('paymentRequestButton', {
       paymentRequest,
@@ -1177,44 +1167,12 @@ function initStripe() {
         paymentRequestButton: {
           type: 'buy',
           theme: 'dark',
-          height: '54px',
+          height: '56px',
         },
       },
     });
 
-    // Check if Apple Pay is available on this device
-    paymentRequest.canMakePayment().then(result => {
-      const loadingEl  = document.getElementById('apple-pay-loading');
-      const buttonEl   = document.getElementById('payment-request-button');
-      const unavailEl  = document.getElementById('apple-pay-unavailable');
-
-      // Show debug info so we can see what result is
-      if (loadingEl) loadingEl.innerHTML = '🔍 Checking: ' + JSON.stringify(result);
-
-      if (result && (result.applePay || result.googlePay)) {
-        if (loadingEl) loadingEl.style.display = 'none';
-        if (buttonEl) buttonEl.style.display = 'block';
-        try { prButton.mount('#payment-request-button'); } catch(e) {
-          if (loadingEl) loadingEl.innerHTML = '❌ Mount error: ' + e.message;
-          if (loadingEl) loadingEl.style.display = 'block';
-        }
-        if (unavailEl) unavailEl.style.display = 'none';
-      } else {
-        // Show exactly what result came back
-        if (loadingEl) loadingEl.innerHTML = '⚠️ Result: ' + JSON.stringify(result) + ' — Apple Pay not detected';
-        if (loadingEl) loadingEl.style.display = 'block';
-        if (buttonEl)  buttonEl.style.display  = 'none';
-        if (unavailEl) unavailEl.style.display = 'block';
-      }
-    }).catch(err => {
-      const loadingEl = document.getElementById('apple-pay-loading');
-      const unavailEl = document.getElementById('apple-pay-unavailable');
-      if (loadingEl) loadingEl.innerHTML = '❌ Error: ' + err.message;
-      if (loadingEl) loadingEl.style.display = 'block';
-      if (unavailEl) unavailEl.style.display = 'block';
-    });
-
-    // Handle Apple Pay payment confirmation
+    // Handle successful Apple Pay authorization
     paymentRequest.on('paymentmethod', async (ev) => {
       try {
         const { clientSecret } = await apiFetch('/api/create-payment-intent', {
@@ -1242,32 +1200,85 @@ function initStripe() {
             if (actionError) {
               showToast('Payment failed. Please try again.');
             } else {
-              showToast('✅ Apple Pay confirmed!');
+              showToast('✅ Payment confirmed!');
               setTimeout(() => startGame(), 500);
             }
           } else {
-            showToast('✅ Apple Pay confirmed!');
+            showToast('✅ Payment confirmed!');
             setTimeout(() => startGame(), 500);
           }
         }
       } catch(err) {
         ev.complete('fail');
-        showToast('Payment failed. Please try again.');
+        showToast('Payment failed: ' + err.message);
       }
     });
 
-  } catch(e) { console.warn('Stripe init failed:', e); }
+  } catch(e) {
+    console.warn('Stripe init failed:', e);
+  }
 }
 
-// Apple Pay amount — always $2
+// Called every time payment screen is shown
+function mountApplePayButton() {
+  if (!stripe || !paymentRequest || !prButton) {
+    showApplePayFallback('Stripe not loaded. Please refresh.');
+    return;
+  }
+
+  const loadingEl = document.getElementById('apple-pay-loading');
+  const buttonEl  = document.getElementById('payment-request-button');
+  const unavailEl = document.getElementById('apple-pay-unavailable');
+
+  // Reset state
+  if (loadingEl) { loadingEl.style.display = 'block'; loadingEl.innerHTML = '⏳ Loading Apple Pay...'; }
+  if (buttonEl)  buttonEl.style.display  = 'none';
+  if (unavailEl) unavailEl.style.display = 'none';
+
+  paymentRequest.canMakePayment().then(result => {
+    if (loadingEl) loadingEl.style.display = 'none';
+
+    if (result) {
+      // Apple Pay or Google Pay is available
+      if (buttonEl) buttonEl.style.display = 'block';
+      try {
+        prButton.mount('#payment-request-button');
+      } catch(e) {
+        // Already mounted is fine — it will display correctly
+        if (e.message && e.message.includes('already been mounted')) {
+          // This is OK, button is already showing
+        } else {
+          showApplePayFallback('Button error: ' + e.message);
+        }
+      }
+    } else {
+      showApplePayFallback(null);
+    }
+  }).catch(err => {
+    if (loadingEl) loadingEl.style.display = 'none';
+    showApplePayFallback('Error: ' + err.message);
+  });
+}
+
+function showApplePayFallback(msg) {
+  const unavailEl = document.getElementById('apple-pay-unavailable');
+  const loadingEl = document.getElementById('apple-pay-loading');
+  if (loadingEl) loadingEl.style.display = 'none';
+  if (unavailEl) {
+    unavailEl.style.display = 'block';
+    if (msg) {
+      // Show the error message for debugging
+      const debugEl = document.getElementById('apple-pay-debug');
+      if (debugEl) debugEl.textContent = msg;
+    }
+  }
+}
+
 function updatePaymentRequestAmount() {
   if (!paymentRequest) return;
-  paymentRequest.update({
-    total: {
-      label: 'Random Trivia Rocks',
-      amount: 200,
-    },
-  });
+  try {
+    paymentRequest.update({ total: { label: 'Random Trivia Rocks', amount: 200 } });
+  } catch(e) { console.warn('PaymentRequest update:', e); }
 }
 
 // ═══════════════════════════════════════════════
@@ -1277,45 +1288,9 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
-
-  // Re-check Apple Pay each time payment screen is shown
-  if (id === 'payment' && stripe && paymentRequest) {
-    const loadingEl = document.getElementById('apple-pay-loading');
-    const buttonEl  = document.getElementById('payment-request-button');
-    const unavailEl = document.getElementById('apple-pay-unavailable');
-    // Reset to loading state
-    if (loadingEl) loadingEl.style.display = 'block';
-    if (buttonEl)  buttonEl.style.display  = 'none';
-    if (unavailEl) unavailEl.style.display = 'none';
-    // Re-check availability
-    paymentRequest.canMakePayment().then(result => {
-      if (loadingEl) loadingEl.style.display = 'none';
-      if (result && (result.applePay || result.googlePay)) {
-        if (buttonEl) {
-          buttonEl.style.display = 'block';
-          try { prButton.mount('#payment-request-button'); } catch(e) {
-            // Already mounted is fine — button still shows
-            console.log('Mount note:', e.message);
-          }
-        }
-        if (unavailEl) unavailEl.style.display = 'none';
-      } else {
-        // Log what came back so we can debug
-        console.log('Apple Pay canMakePayment result:', JSON.stringify(result));
-        if (loadingEl) {
-          loadingEl.innerHTML = '⚠️ ' + JSON.stringify(result);
-          loadingEl.style.display = 'block';
-        }
-        if (unavailEl) unavailEl.style.display = 'block';
-      }
-    }).catch(err => {
-      console.log('canMakePayment error:', err.message);
-      if (loadingEl) {
-        loadingEl.innerHTML = '❌ ' + err.message;
-        loadingEl.style.display = 'block';
-      }
-      if (unavailEl) unavailEl.style.display = 'block';
-    });
+  // Mount Apple Pay button each time payment screen is shown
+  if (id === 'payment') {
+    setTimeout(() => mountApplePayButton(), 300);
   }
 }
 
