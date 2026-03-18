@@ -1277,13 +1277,14 @@ function updatePreview() {
 
 function goToPayment() {
   const name = document.getElementById('username-input').value.trim();
-  if (!name) { showToast('Please enter a display name!'); return; }
+  if (!name) { showToast('Please enter your display name first!'); return; }
   state.username = name;
   saveProfile();
-  const price = '$2';
-  document.getElementById('pay-amount').textContent = price;
-  document.getElementById('pay-btn-amount').textContent = '$2';
-  document.getElementById('pay-label').textContent = 'Play — $2';
+  // Safely update any price elements that exist
+  const payAmount = document.getElementById('pay-amount');
+  const payLabel  = document.getElementById('pay-label');
+  if (payAmount) payAmount.textContent = '$2';
+  if (payLabel)  payLabel.textContent  = 'Play — $2';
   updatePaymentRequestAmount();
   showScreen('payment');
 }
